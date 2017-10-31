@@ -40,5 +40,8 @@ for dataset in "training" "testing"; do
   fi
 done
 
+# This dataset does not exist.
+rm testing/week4_tuesday_inside.gz
+
 echo "Done!"
 
