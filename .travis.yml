@@ -1,0 +1,15 @@
+language: python
+
+notifications:
+  email: false
+  
+branches:
+only:
+  - master
+
+install:
+  - pip install scapy 
+  - pip install numpy
+
+script:
+- python -m unittest discover
