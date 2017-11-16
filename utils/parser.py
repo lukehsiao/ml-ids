@@ -44,7 +44,6 @@ def np_parse_pcap(filename):
     'IPv4_tos',
     'IPv4_length',
     'IPv4_id',
-    'IPv4_flags',
     'IPv4_offset',
     'IPv4_ttl',
     'IPv4_proto',
@@ -63,13 +62,14 @@ def np_parse_pcap(filename):
     'TCP_window',
     'TCP_chksum',
     'TCP_urgPtr',
+    'TCP_options',
     'UDP_sport',
     'UDP_dport',
     'UDP_length',
     'UDP_chksum',
     ]
     pkts = rdpcap_raw(filename)
-    design_mat = np.zeros((len(pkts), len(features)))
+    design_mat = -1*np.ones((len(pkts), len(features)))
     time_arr = np.zeros((len(pkts), 1))
     count = 0
     for pkt_bytes, (sec, usec, wirelen) in pkts:
@@ -130,7 +130,7 @@ def parse_ipv4(pkt_bytes):
     ipv4['tos'] = struct.unpack(">B", pkt_bytes[1:2])[0]
     ipv4['length'] = struct.unpack(">H", pkt_bytes[2:4])[0]
     ipv4['id'] = struct.unpack(">H", pkt_bytes[4:6])[0]
-    ipv4['flags'] = struct.unpack(">B", pkt_bytes[6:7])[0] >> 5 # only want 3 most significant bits
+    #ipv4['flags'] = struct.unpack(">B", pkt_bytes[6:7])[0] >> 5 # only want 3 most significant bits
     ipv4['offset'] = struct.unpack(">H", pkt_bytes[6:8])[0] & 0b0001111111111111 # get rid of most significant 3 bits
     ipv4['ttl'] = struct.unpack(">B", pkt_bytes[8:9])[0]
     ipv4['proto'] = struct.unpack(">B", pkt_bytes[9:10])[0]
@@ -162,12 +162,13 @@ def parse_tcp(pkt_bytes):
     tcp['seqNo'] = struct.unpack(">L", pkt_bytes[4:8])[0]
     tcp['ackNo'] = struct.unpack(">L", pkt_bytes[8:12])[0]
     tcp['dataOffset'] = struct.unpack(">B", pkt_bytes[12:13])[0] >> 4 # just the 4 most significant bits
-#    if (tcp['dataOffset'] > 5):
-#        print >> sys.stderr, "WARNING: did not parse tcp options from packet"
     tcp['flags'] = struct.unpack(">B", pkt_bytes[13:14])[0]   # & 0b11000000 # dont care about 2 most signifiant bits
     tcp['window'] = struct.unpack(">H", pkt_bytes[14:16])[0]
     tcp['chksum'] = struct.unpack(">H", pkt_bytes[16:18])[0]
     tcp['urgPtr'] = struct.unpack(">H", pkt_bytes[18:20])[0]
+    if (tcp['dataOffset'] > 5):
+        tcp['options'] = struct.unpack(">L", pkt_bytes[20:24])[0]
+        total_len += 4
     return tcp, pkt_bytes[total_len:]
 
 
