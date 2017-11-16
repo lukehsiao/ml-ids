@@ -18,12 +18,13 @@ class Clusterer:
         self.N += 1
 
         # Check if value falls into existing range
-        for (low, high) in self.clusters:
+        for low, high in self.clusters:
             if value >= low and value <= high:
                 return
 
         # Add item to list and inc distinct value counter
         self.clusters.append([value, value])
+        self.clusters.sort()
         self.R += 1
 
         # Merge clusters if necessary to maintain maximum C
@@ -43,3 +44,13 @@ class Clusterer:
     def getTotal(self):
         """Return the total number of values added."""
         return self.N
+
+    def getClusters(self):
+        """Return the list of ranges."""
+        return self.clusters
+
+    def clear(self):
+        """Clear the contents of the Clusterer."""
+        self.R = 0
+        self.N = 0
+        self.clusters = []
