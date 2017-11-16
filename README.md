@@ -1,4 +1,5 @@
 # Machine-learning based intrusion detection
+[![Build Status](https://travis-ci.com/lukehsiao/ml-ids.svg?token=T3shSHjcJk8kMbzHEY7Z&branch=master)](https://travis-ci.com/lukehsiao/ml-ids)
 
 ## Downloading the Datasets
 
