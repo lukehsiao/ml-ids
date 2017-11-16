@@ -2,6 +2,7 @@
 import sys, os
 from scapy_patch import *
 import re, csv, struct, socket
+import numpy as np
 
 TYPE_IPV4 = 0x0800
 PROTO_ICMP = 1
@@ -17,13 +18,72 @@ Returns:
 """
 def parse_pcap(filename):
     pkts = rdpcap_raw(filename)
-    # extract just the packet bytes
-    pkt_bytes = [p[0] for p in pkts]
-    pkts = []
-    for p_bytes in pkt_bytes:
+    plist = []
+    for p_bytes, _ in pkts:
         pkt = parse_pkt(p_bytes)
         pkts.append(pkt)
-    return pkts
+    return plist
+
+"""
+Inputs:
+  - filename : a pcap file that contains packets to parse
+
+Returns:
+  - a numpy matrix where each row is a packet and each column is a different field
+  - a numpy column array containing the corresponding time of each packet
+"""
+def np_parse_pcap(filename):
+    features = [
+    'Ethernet_size',
+    'Ethernet_dstHi',
+    'Ethernet_dstLow',
+    'Ethernet_srcHi',
+    'Ethernet_srcLow',
+    'Ethernet_type',
+    'IPv4_ihl',
+    'IPv4_tos',
+    'IPv4_length',
+    'IPv4_id',
+    'IPv4_flags',
+    'IPv4_offset',
+    'IPv4_ttl',
+    'IPv4_proto',
+    'IPv4_chksum',
+    'IPv4_src',
+    'IPv4_dst',
+    'ICMP_type',
+    'ICMP_code',
+    'ICMP_chksum',
+    'TCP_sport',
+    'TCP_dport',
+    'TCP_seqNo',
+    'TCP_ackNo',
+    'TCP_dataOffset',
+    'TCP_flags',
+    'TCP_window',
+    'TCP_chksum',
+    'TCP_urgPtr',
+    'UDP_sport',
+    'UDP_dport',
+    'UDP_length',
+    'UDP_chksum',
+    ]
+    pkts = rdpcap_raw(filename)
+    design_mat = np.zeros((len(pkts), len(features)))
+    time_arr = np.zeros((len(pkts), 1))
+    count = 0
+    for pkt_bytes, (sec, usec, wirelen) in pkts:
+        time_arr[count] = float(sec) + float(usec)*1e-6
+        ind = features.index('Ethernet_size')
+        design_mat[count, ind] = wirelen
+        pkt = parse_pkt(pkt_bytes)
+        for header in pkt.keys():
+            for field in pkt[header].keys():
+                key = header + '_' + field
+                ind = features.index(key)
+                design_mat[count, ind] = pkt[header][field]
+        count += 1
+    return design_mat, time_arr
 
 """
 Parse the given packet byte string into a dictionary
@@ -50,10 +110,10 @@ def parse_ethernet(pkt_bytes):
     if len(pkt_bytes) < total_len:
         print >> sys.stderr, "ERROR: not enough bytes to parse Ethernet header"
         return eth, pkt_bytes
-    eth['dst_hi'] = struct.unpack(">L", '\x00' + pkt_bytes[0:3])[0]
-    eth['dst_low'] = struct.unpack(">L", '\x00' + pkt_bytes[3:6])[0]
-    eth['src_hi'] = struct.unpack(">L", '\x00' + pkt_bytes[6:9])[0]
-    eth['src_low'] = struct.unpack(">L", '\x00' + pkt_bytes[9:12])[0]
+    eth['dstHi'] = struct.unpack(">L", '\x00' + pkt_bytes[0:3])[0]
+    eth['dstLow'] = struct.unpack(">L", '\x00' + pkt_bytes[3:6])[0]
+    eth['srcHi'] = struct.unpack(">L", '\x00' + pkt_bytes[6:9])[0]
+    eth['srcLow'] = struct.unpack(">L", '\x00' + pkt_bytes[9:12])[0]
     eth['type'] = struct.unpack(">H", pkt_bytes[12:14])[0]
     return eth, pkt_bytes[total_len:]
 
@@ -77,8 +137,7 @@ def parse_ipv4(pkt_bytes):
     ipv4['chksum'] = struct.unpack(">H", pkt_bytes[10:12])[0]
     ipv4['src'] = struct.unpack(">L", pkt_bytes[12:16])[0]
     ipv4['dst'] = struct.unpack(">L", pkt_bytes[16:20])[0]
-    return ipv4, pkt_bytes[total_len:]    
-
+    return ipv4, pkt_bytes[total_len:]
 
 def parse_icmp(pkt_bytes):
     total_len = 4
@@ -110,6 +169,7 @@ def parse_tcp(pkt_bytes):
     tcp['chksum'] = struct.unpack(">H", pkt_bytes[16:18])[0]
     tcp['urgPtr'] = struct.unpack(">H", pkt_bytes[18:20])[0]
     return tcp, pkt_bytes[total_len:]
+
 
 def parse_udp(pkt_bytes):
     total_len = 8
