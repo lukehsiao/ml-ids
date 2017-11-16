@@ -1,8 +1,8 @@
 
 import sys, os
-
 from scapy.all import *
-sys.path.append('/usr/lib/python2.7/dist-packages/scapy')
+
+# this is the utils from the scapy installation directory
 from utils import *
 
 @conf.commands.register
