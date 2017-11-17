@@ -39,4 +39,11 @@ to your modified settings file):
 source ~/classes/cs229/ml-ids/settings.sh
 ```
 
+## Running Tests
+To run tests locally, run
 
+```
+python -m unittest discover
+```
+
+from the root folder of the repository.

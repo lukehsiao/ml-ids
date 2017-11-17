@@ -11,6 +11,41 @@ PROTO_ICMP = 1
 PROTO_TCP = 6
 PROTO_UDP = 17
 
+FEATURES = [
+    'Ethernet_size',
+    'Ethernet_dstHi',
+    'Ethernet_dstLow',
+    'Ethernet_srcHi',
+    'Ethernet_srcLow',
+    'Ethernet_type',
+    'IPv4_ihl',
+    'IPv4_tos',
+    'IPv4_length',
+    'IPv4_id',
+    'IPv4_offset',
+    'IPv4_ttl',
+    'IPv4_proto',
+    'IPv4_chksum',
+    'IPv4_src',
+    'IPv4_dst',
+    'ICMP_type',
+    'ICMP_code',
+    'ICMP_chksum',
+    'TCP_sport',
+    'TCP_dport',
+    'TCP_seqNo',
+    'TCP_ackNo',
+    'TCP_dataOffset',
+    'TCP_flags',
+    'TCP_window',
+    'TCP_chksum',
+    'TCP_urgPtr',
+    'TCP_options',
+    'UDP_sport',
+    'UDP_dport',
+    'UDP_length',
+    'UDP_chksum',
+]
 
 def eprint(*args, **kwargs):
     """Print to stderr."""
@@ -63,55 +98,20 @@ def np_parse_pcap_worker(filename):
         different field
       - a numpy column array containing the corresponding time of each packet
     """
-    features = [
-        'Ethernet_size',
-        'Ethernet_dstHi',
-        'Ethernet_dstLow',
-        'Ethernet_srcHi',
-        'Ethernet_srcLow',
-        'Ethernet_type',
-        'IPv4_ihl',
-        'IPv4_tos',
-        'IPv4_length',
-        'IPv4_id',
-        'IPv4_offset',
-        'IPv4_ttl',
-        'IPv4_proto',
-        'IPv4_chksum',
-        'IPv4_src',
-        'IPv4_dst',
-        'ICMP_type',
-        'ICMP_code',
-        'ICMP_chksum',
-        'TCP_sport',
-        'TCP_dport',
-        'TCP_seqNo',
-        'TCP_ackNo',
-        'TCP_dataOffset',
-        'TCP_flags',
-        'TCP_window',
-        'TCP_chksum',
-        'TCP_urgPtr',
-        'TCP_options',
-        'UDP_sport',
-        'UDP_dport',
-        'UDP_length',
-        'UDP_chksum',
-    ]
 
     pkts = rdpcap_raw(filename)
-    design_mat = -1*np.ones((len(pkts), len(features)), dtype=int)
+    design_mat = -1*np.ones((len(pkts), len(FEATURES)), dtype=int)
     time_arr = np.zeros((len(pkts), 1))
     count = 0
     for pkt_bytes, (sec, usec, wirelen) in pkts:
         time_arr[count] = float(sec) + float(usec)*1e-6
-        ind = features.index('Ethernet_size')
+        ind = FEATURES.index('Ethernet_size')
         design_mat[count, ind] = wirelen
         pkt = parse_pkt(pkt_bytes)
         for header in pkt.keys():
             for field in pkt[header].keys():
                 key = header + '_' + field
-                ind = features.index(key)
+                ind = FEATURES.index(key)
                 design_mat[count, ind] = pkt[header][field]
         count += 1
     return design_mat, time_arr
