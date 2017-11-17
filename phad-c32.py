@@ -48,14 +48,14 @@ def _parseTrainingData():
         print("Parsing the training data...")
         # Parse the Training Data
         trainingFiles = [
-            "./data/training/week3_monday_inside",
-            "./data/training/week3_monday_extra_inside",
-            "./data/training/week3_tuesday_inside",
-            "./data/training/week3_tuesday_extra_inside",
-            "./data/training/week3_wednesday_inside",
-            "./data/training/week3_wednesday_extra_inside",
-            "./data/training/week3_thursday_inside",
-            "./data/training/week3_friday_inside"
+            "data/training/week3_monday_inside",
+            "data/training/week3_monday_extra_inside",
+            "data/training/week3_tuesday_inside",
+            "data/training/week3_tuesday_extra_inside",
+            "data/training/week3_wednesday_inside",
+            "data/training/week3_wednesday_extra_inside",
+            "data/training/week3_thursday_inside",
+            "data/training/week3_friday_inside"
         ]
         week3_data = np_parse_pcap(trainingFiles)
 
