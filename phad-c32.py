@@ -53,12 +53,12 @@ def _parseTestingData():
             #  "data/testing/week4_tuesday_inside",  <-- doesn't exist
             "data/testing/week4_wednesday_inside",
             "data/testing/week4_thursday_inside",
-            "data/testing/week4_friday_inside"
+            "data/testing/week4_friday_inside",
             "data/testing/week5_monday_inside",
             "data/testing/week5_tuesday_inside",
             "data/testing/week5_wednesday_inside",
             "data/testing/week5_thursday_inside",
-            "data/testing/week5_friday_inside"
+            "data/testing/week5_friday_inside",
         ]
         test_data = np_parse_pcap(testingFiles)
 
@@ -83,7 +83,7 @@ def _parseTrainingData():
             "data/training/week3_wednesday_inside",
             "data/training/week3_wednesday_extra_inside",
             "data/training/week3_thursday_inside",
-            "data/training/week3_friday_inside"
+            "data/training/week3_friday_inside",
         ]
         week3_data = np_parse_pcap(trainingFiles)
 
@@ -94,14 +94,11 @@ def _parseTrainingData():
 def main():
     """Run the PHAD-C32 experiment."""
     week3_data = _parseTrainingData()
+    test_data = _parseTestingData()
 
     # Clustering header data
     _clusterTraining(week3_data)
 
-    # Parse test data
-    test_data = _parseTestingData()
-
-    return
 
 if __name__ == '__main__':
     main()
