@@ -1,50 +1,65 @@
 #! /usr/bin/python
 """This code recreates the PHAD-C32 experiments in the original PHAD paper."""
+from pprint import pprint
 from utils.parser import np_parse_pcap
 from utils import Clusterer
 
 
 def _clusterAndScore(days):
-    etherSize    = Clusterer()
-    etherDestHi  = Clusterer()
-    etherDestLo  = Clusterer()
-    etherSrcHi   = Clusterer()
-    etherSrcLo   = Clusterer()
-    etherProto   = Clusterer()
-    IPHdrLen     = Clusterer()
-    IPTOS        = Clusterer()
-    IPLen        = Clusterer()
-    IPFragID     = Clusterer()
-    IPFragPtr    = Clusterer()
-    IPTTL        = Clusterer()
-    IPProto      = Clusterer()
-    IPCksm       = Clusterer()
-    IPSrc        = Clusterer()
-    IPDest       = Clusterer()
-    TCPSrcPort   = Clusterer()
-    TCPDestPort  = Clusterer()
-    TCPSeq       = Clusterer()
-    TCPAck       = Clusterer()
-    TCPHdrLen    = Clusterer()
-    TCPFlags     = Clusterer()
-    TCPWndSz     = Clusterer()
-    TCPCksm      = Clusterer()
-    TCPUrgPtr    = Clusterer()
-    TCPOption    = Clusterer()
-    UDPSrcPort   = Clusterer()
-    UDPDestPort  = Clusterer()
-    UDPLen       = Clusterer()
-    UDPCksm      = Clusterer()
-    ICMPType     = Clusterer()
-    ICMPCode     = Clusterer()
-    ICMPCksm     = Clusterer()
+    NUM_FIELDS = 33
+    (
+        etherSize,
+        etherDestHi,
+        etherDestLo,
+        etherSrcHi,
+        etherSrcLo,
+        etherProto,
+        IPHdrLen,
+        IPTOS,
+        IPLen,
+        IPFragID,
+        IPFragPtr,
+        IPTTL,
+        IPProto,
+        IPCksm,
+        IPSrc,
+        IPDest,
+        TCPSrcPort,
+        TCPDestPort,
+        TCPSeq,
+        TCPAck,
+        TCPHdrLen,
+        TCPFlags,
+        TCPWndSz,
+        TCPCksm,
+        TCPUrgPtr,
+        TCPOption,
+        UDPSrcPort,
+        UDPDestPort,
+        UDPLen,
+        UDPCksm,
+        ICMPType,
+        ICMPCode,
+        ICMPCksm
+    ) = (Clusterer() for i in range(NUM_FIELDS))
+    Clusters = (etherSize, etherDestHi, etherDestLo, etherSrcHi, etherSrcLo,
+                etherProto, IPHdrLen, IPTOS, IPLen, IPFragID, IPFragPtr, IPTTL,
+                IPProto, IPCksm, IPSrc, IPDest, TCPSrcPort, TCPDestPort,
+                TCPSeq, TCPAck, TCPHdrLen, TCPFlags, TCPWndSz, TCPCksm,
+                TCPUrgPtr, TCPOption, UDPSrcPort, UDPDestPort, UDPLen, UDPCksm,
+                ICMPType, ICMPCode, ICMPCksm)
 
     for day in days:
-        for ether_size in day[0][:, 0]:
-            cluster.add(ether_size)
+        for packet_hdrs in day[0]:
+            for i in xrange(NUM_FIELDS):
+                if packet_hdrs[i] != -1:
+                    Clusters[i].add(packet_hdrs[i])
 
-    print(str(cluster.getDistinct()) + "/" + str(cluster.getTotal()))
-    print(cluster.getClusters())
+    for i in xrange(NUM_FIELDS):
+        pprint(str(Clusters[i].getDistinct()) + "/" +
+               str(Clusters[i].getTotal()))
+        #  pprint(Clusters[i].getClusters())
+
 
 def _parseTrainingData():
     """Parse the week 3 training data."""
