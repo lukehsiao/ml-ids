@@ -6,7 +6,7 @@ from utils import Clusterer
 from utils.parser import np_parse_pcap
 
 
-def _clusterAndScore(days):
+def _clusterTraining(trainingDays, verbose=False):
     print("Clustering the header fields...")
 
     feature_keys = ['Ethernet_size', 'Ethernet_dstHi', 'Ethernet_dstLow',
@@ -20,7 +20,7 @@ def _clusterAndScore(days):
                     'UDP_dport', 'UDP_length', 'UDP_chksum']
     features = {key: Clusterer() for key in feature_keys}
 
-    for day in days:
+    for day in trainingDays:
         for packet_hdrs in day[0]:
             # Iterate over feature_keys so indexes are the correct order
             for i, feature in enumerate(feature_keys):
@@ -32,11 +32,39 @@ def _clusterAndScore(days):
                     # them all together.
                     features[feature].add(packet_hdrs[i])
 
-    model = {}
-    for feature in features:
-        model[feature] = (features[feature].getDistinct(),
-                          features[feature].getTotal())
-    pprint(model)
+    if verbose:
+        model = {}
+        for feature in features:
+            model[feature] = (features[feature].getDistinct(),
+                              features[feature].getTotal())
+        pprint(model)
+
+
+def _parseTestingData():
+    """Parse week 4 and 5 of testing data."""
+    try:
+        test_data = np.load(open("data/test_data.npy", "rb"))
+        print("Loaded pre-parsed training data...")
+    except IOError:
+        print("Parsing the testing data...")
+        # Parse the Training Data
+        testingFiles = [
+            "data/training/week4_monday_inside",
+            #  "data/training/week4_tuesday_inside",  <-- doesn't exist
+            "data/training/week4_wednesday_inside",
+            "data/training/week4_thursday_inside",
+            "data/training/week4_friday_inside"
+            "data/training/week5_monday_inside",
+            "data/training/week5_tuesday_inside",
+            "data/training/week5_wednesday_inside",
+            "data/training/week5_thursday_inside",
+            "data/training/week5_friday_inside"
+        ]
+        test_data = np_parse_pcap(testingFiles)
+
+        np.save(open("data/test_data.npy", "wb"), test_data)
+
+    return test_data
 
 
 def _parseTrainingData():
@@ -67,8 +95,11 @@ def main():
     """Run the PHAD-C32 experiment."""
     week3_data = _parseTrainingData()
 
-    # Clust ering header data
-    _clusterAndScore(week3_data)
+    # Clustering header data
+    _clusterTraining(week3_data)
+
+    # Parse test data
+    test_data = _parseTestingData()
 
     return
 
