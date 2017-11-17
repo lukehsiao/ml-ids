@@ -78,7 +78,7 @@ def np_parse_pcap(filename):
         'UDP_chksum',
     ]
     pkts = rdpcap_raw(filename)
-    design_mat = -1*np.ones((len(pkts), len(features)))
+    design_mat = -1*np.ones((len(pkts), len(features)), dtype=int)
     time_arr = np.zeros((len(pkts), 1))
     count = 0
     for pkt_bytes, (sec, usec, wirelen) in pkts:
