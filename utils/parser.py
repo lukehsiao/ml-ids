@@ -1,6 +1,7 @@
 from __future__ import print_function
 import sys, os
 from scapy_patch import *
+import types
 import re, csv, struct, socket
 import numpy as np
 from multiprocessing import Pool, cpu_count
@@ -42,6 +43,11 @@ def np_parse_pcap(pcap_list):
       - A list of 2 element tuples: (design_matrix, time_vector). One for each
         pcap file
     """
+
+    # Catch cases where the caller only passes a single filename
+    if isinstance(pcap_list, types.StringTypes):
+        pcap_list = [pcap_list]
+
     p = Pool(cpu_count())
     result = p.map(np_parse_pcap_worker, pcap_list)
     return result
@@ -92,7 +98,7 @@ def np_parse_pcap_worker(filename):
         'UDP_length',
         'UDP_chksum',
     ]
-    
+
     pkts = rdpcap_raw(filename)
     design_mat = -1*np.ones((len(pkts), len(features)), dtype=int)
     time_arr = np.zeros((len(pkts), 1))
