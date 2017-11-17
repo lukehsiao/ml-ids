@@ -49,16 +49,16 @@ def _parseTestingData():
         print("Parsing the testing data...")
         # Parse the Training Data
         testingFiles = [
-            "data/training/week4_monday_inside",
-            #  "data/training/week4_tuesday_inside",  <-- doesn't exist
-            "data/training/week4_wednesday_inside",
-            "data/training/week4_thursday_inside",
-            "data/training/week4_friday_inside"
-            "data/training/week5_monday_inside",
-            "data/training/week5_tuesday_inside",
-            "data/training/week5_wednesday_inside",
-            "data/training/week5_thursday_inside",
-            "data/training/week5_friday_inside"
+            "data/testing/week4_monday_inside",
+            #  "data/testing/week4_tuesday_inside",  <-- doesn't exist
+            "data/testing/week4_wednesday_inside",
+            "data/testing/week4_thursday_inside",
+            "data/testing/week4_friday_inside"
+            "data/testing/week5_monday_inside",
+            "data/testing/week5_tuesday_inside",
+            "data/testing/week5_wednesday_inside",
+            "data/testing/week5_thursday_inside",
+            "data/testing/week5_friday_inside"
         ]
         test_data = np_parse_pcap(testingFiles)
 
