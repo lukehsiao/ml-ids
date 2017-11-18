@@ -42,5 +42,20 @@ class TestClusterer(unittest.TestCase):
         self.assertEqual(8, C.getTotal())
         self.assertEqual(6, C.getDistinct())
 
+    def test_contains(self):
+        C = Clusterer(C=2)
+        C.add(1)
+        C.add(2)
+        C.add(8)
+        C.add(3)
+        C.add(2)
+        C.add(9)
+        C.add(100)
+        C.add(7)
+
+        self.assertTrue(C.contains(6))
+        self.assertFalse(C.contains(10))
+
+
 if __name__ == '__main__':
     unittest.main()

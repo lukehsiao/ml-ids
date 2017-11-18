@@ -17,10 +17,8 @@ class Clusterer:
         # Increment total values counter
         self.N += 1
 
-        # Check if value falls into existing range
-        for low, high in self.clusters:
-            if value >= low and value <= high:
-                return
+        if self.contains(value):
+            return
 
         # Add item to list and inc distinct value counter
         self.clusters.append([value, value])
@@ -54,3 +52,11 @@ class Clusterer:
         self.R = 0
         self.N = 0
         self.clusters = []
+
+    def contains(self, value):
+        """Check if the value falls into any existing cluster."""
+        for low, high in self.clusters:
+            if value >= low and value <= high:
+                return True
+
+        return False

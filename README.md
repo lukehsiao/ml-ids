@@ -22,6 +22,12 @@ Documentation](https://www.ll.mit.edu/ideval/docs/index.html) page.
 
 ## Setting Up the Environment
 
+First, install the python package dependencies by running
+
+```
+pip install -r requirements.txt
+```
+
 Update `settings.sh` so that `ML_IDS_DIR` points to the installation location
 of the repository. And `SCAPY_PATH` points to the installation location of
 python scapy.
@@ -33,4 +39,11 @@ to your modified settings file):
 source ~/classes/cs229/ml-ids/settings.sh
 ```
 
+## Running Tests
+To run tests locally, run
 
+```
+python -m unittest discover
+```
+
+from the root folder of the repository.
