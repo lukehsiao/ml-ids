@@ -5,7 +5,7 @@ from datetime import datetime
 # num seconds to convert from EST to PST
 ADJUSTMENT_TIME = 3*3600
 
-def datetime_to_tstamp(date, time):
+def datetime_to_tstamp(date, time, adjust=True):
     """Convert date and time strings into a timestamp matching the pcap files
     Inputs:
       - date string with the format: MM/DD/YYYY
@@ -25,7 +25,11 @@ def datetime_to_tstamp(date, time):
         print >> sys.stderr, "ERROR: datetime_to_tstamp: invalid time string"
         return
     dt = datetime(int(d.group('year')), int(d.group('month')), int(d.group('day')), int(t.group('hour')), int(t.group('min')), int(t.group('sec')))
-    return float(dt.strftime("%s")) - ADJUSTMENT_TIME
+    if adjust:
+        result = float(dt.strftime("%s")) - ADJUSTMENT_TIME
+    else:
+        result = float(dt.strftime("%s"))
+    return result
 
 
 def tstamp_to_datetime(tstamp):

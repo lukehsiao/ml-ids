@@ -27,26 +27,6 @@ def make_label_data():
     p = Pool(cpu_count())
     result = p.map(label_packets, input_data)
 
-#def label_attacks(attack_file, pcap_file):
-#    """
-#    Inputs:
-#      - attack_file: the master-listfile-condensed.txt file
-#      - data_list: a list of tuples of the form (design_matrix, time_vector)
-#
-#       Returns:
-#         - a list of column vectors whose entries are wither 1 or 0 indicating
-#           whether or not the packet was involved in an attack according to the
-#           provided attack_file
-#    """
-#    attacks = read_attack_file(attack_file)
-#    input_data = [(packets, times, attacks) for (packets, times) in data_list]
-#    p = Pool(cpu_count())
-#    result = p.map(label_packets, input_data)
-##    result = []
-##    for data in input_data:
-##        result.append(label_packets(data))
-#    return result
-
 def read_attack_file(filename):
     label_fmat = r'(?P<ID>[\d]+\.\d{6})(?P<date>\d{2}/\d{2}/\d{4}) (?P<time>\d{2}:\d{2}:\d{2})  (?P<duration>\d{2}:\d{2}:\d{2}) (?P<dstIP>\d{3}\.\d{3}\.\d{3}\.\d{3})(?P<name>.{10}) (?P<insider>.{8}) (?P<manual>.{7}) (?P<console>.{7}) (?P<success>.{8}) (?P<aDump>.{6}) (?P<oDump>.{5}) (?P<iDumpBSM>.{9}) (?P<SysLogs>.{7}) (?P<FSListing>.{9}) (?P<StealthyNew>.{12}) (?P<Category>.*$)'
     with open(filename) as f:
@@ -97,15 +77,6 @@ def label_packets(input_tuple):
     with open(attackIDs_prefix + '_' + pcap, 'w') as f:
         json.dump(attack_ids, f)
     return None
- 
-
-#def check_attack(pkt, time, attacks):
-#    dstIP_index = features.index('IPv4_dst')
-#    dstIP = pkt[dstIP_index]
-#    for dic in attacks:
-#        if dic['range'][0] <= time and time <= dic['range'][1] and dstIP == dic['dstIP']:
-#            return 1
-#    return 0
 
 def make_attack_list(matches):
     result = []
@@ -115,12 +86,21 @@ def make_attack_list(matches):
         endTime = startTime + dur_to_sec(m.group('duration'))
         attack['range'] = (startTime, endTime)
         attack['dstIP'] = ip2int(m.group('dstIP'))
+        attack['name'] = m.group('name')
         attack['ID'] = m.group('ID')
         result.append(attack)
     return result
 
 
+def ip2int(addr):
+    nums = addr.split('.')
+    nums = map(int, nums)
+    nums = map(str, nums)
+    new_addr = '.'.join(nums)
+    return struct.unpack("!I", socket.inet_aton(new_addr))[0] 
 
+def int2ip(addr):
+    return socket.inet_ntoa(struct.pack("!I", addr))
 
 
 
