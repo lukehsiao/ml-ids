@@ -2,8 +2,8 @@
 
 import sys, os, re
 import argparse
-from labeler import read_attack_file, ip2int, int2ip
-from time_functions import datetime_to_tstamp
+from utils.labeler import read_attack_file, ip2int, int2ip
+from utils.time_functions import datetime_to_tstamp
 
 def check_results(results_file, attacks_file, threshold=0.5):
     print "Using threshold = {}".format(threshold)
@@ -45,7 +45,7 @@ def read_results(results_file):
     with open(results_file) as f:
         contents = f.read()
     matches = re.finditer(result_fmat, contents, re.M)
-    results = [m.groupdict() for m in matches] 
+    results = [m.groupdict() for m in matches]
     for dic in results:
         dic['dstIP'] = ip2int(dic['dstIP'])
         dic['timestamp'] = datetime_to_tstamp(dic['date'], dic['time'])
@@ -55,7 +55,7 @@ def read_results(results_file):
 def get_attack_info(result_dic, attack_list, threshold=0.5, leeway=60):
     if result_dic['score'] <= threshold:
         return '', '', 'N'
-    tstamp = result_dic['timestamp'] 
+    tstamp = result_dic['timestamp']
     dstIP = result_dic['dstIP']
     for attack in attack_list:
         if tstamp >= (attack['range'][0] - leeway) and tstamp <= (attack['range'][1] + leeway) and dstIP == attack['dstIP']:
