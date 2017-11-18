@@ -162,20 +162,22 @@ def _outputToCSV(results, filename, threshold=0.5):
 
     for day in results:
         for packet, timestamp, scores in zip(day[0], day[1], day[2]):
+            datetime = time.strftime('%Y-%m-%d %H:%M:%S',
+                                     time.localtime(timestamp))
             if packet[15] != -1:
-                datetime = time.strftime('%Y-%m-%d %H:%M:%S',
-                                         time.localtime(timestamp))
                 destIP = socket.inet_ntoa(struct.pack('!L', packet[15]))
-                mostAnomalous = FEATURES[scores[0:-1].argmax()]
-                percentage = scores[0:-1].max() / scores[-1]
-                score = _normalizeScore(scores[-1])
+            else:
+                destIP = "0.0.0.0"
+            mostAnomalous = FEATURES[scores[0:-1].argmax()]
+            percentage = scores[0:-1].max() / scores[-1]
+            score = _normalizeScore(scores[-1])
 
-                if score >= threshold:
-                    writer.writerow([datetime,
-                                     destIP,
-                                     score,
-                                     mostAnomalous,
-                                     percentage])
+            if score >= threshold:
+                writer.writerow([datetime,
+                                 destIP,
+                                 score,
+                                 mostAnomalous,
+                                 percentage])
 
     outfile.close()
     print("Output results to file!")
