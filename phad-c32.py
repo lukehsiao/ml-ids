@@ -9,7 +9,7 @@ import socket
 import struct
 import time
 from utils import Clusterer
-from utils.parser import np_parse_pcap, FEATURES
+from utils import np_parse_pcap, FEATURES
 
 
 def _clusterTraining(trainingDays, verbose=False):
