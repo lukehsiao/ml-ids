@@ -10,6 +10,7 @@ import struct
 import time
 from utils import Clusterer
 from utils import np_parse_pcap, FEATURES
+from utils.time_functions import tstamp_to_datetime
 
 
 def _clusterTraining(trainingDays, verbose=False):
@@ -162,8 +163,8 @@ def _outputToCSV(results, filename, threshold=0.5):
 
     for day in results:
         for packet, timestamp, scores in zip(day[0], day[1], day[2]):
-            datetime = time.strftime('%Y-%m-%d %H:%M:%S',
-                                     time.localtime(timestamp))
+            datetime = tstamp_to_datetime(timestamp)
+
             if packet[15] != -1:
                 destIP = socket.inet_ntoa(struct.pack('!L', packet[15]))
             else:
@@ -173,7 +174,8 @@ def _outputToCSV(results, filename, threshold=0.5):
             score = _normalizeScore(scores[-1])
 
             if score >= threshold:
-                writer.writerow([datetime,
+                writer.writerow([datetime[0],
+                                 datetime[1],
                                  destIP,
                                  score,
                                  mostAnomalous,
@@ -191,7 +193,7 @@ def main():
     # Clustering header data
     clusters = _clusterTraining(week3Data)
     results = _runScoring(clusters, testData)
-    _outputToCSV(results, "data/results.csv", threshold=0.5)
+    _outputToCSV(results, "data/results.csv", threshold=0.2)
 
 
 if __name__ == '__main__':
