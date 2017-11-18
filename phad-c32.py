@@ -1,4 +1,5 @@
-#! /usr/bin/python
+#!/usr/bin/env python
+
 """This code recreates the PHAD-C32 experiments in the original PHAD paper."""
 from __future__ import print_function, division
 import cPickle as pickle
