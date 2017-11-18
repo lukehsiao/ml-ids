@@ -1,6 +1,6 @@
 #! /usr/bin/python
 """This code recreates the PHAD-C32 experiments in the original PHAD paper."""
-from __future__ import print_function
+from __future__ import print_function, division
 import cPickle as pickle
 import csv
 from math import log10
@@ -118,25 +118,32 @@ def _runScoring(clusters, testData):
 
         # Initialize last anomaly time to 1 sec before time of first packet
         lastAnomaly = {key: testData[0][1][1] - 1 for key in FEATURES}
-        nr = {key: clusters[key].getTotal()/clusters[key].getDistinct() for
+        nr = {key: (clusters[key].getTotal(), clusters[key].getDistinct()) for
               key in FEATURES}
 
         for day in testData:
             dayScores = np.zeros((day[0].shape[0], day[0].shape[1] + 1))
             # Create array of field and packet scores for each packet
-            for packet, timestamp, scores in zip(day[0], day[1], dayScores):
+            for packetNum, packet, timestamp in zip(xrange(day[0].shape[0]),
+                                                    day[0], day[1]):
                 # Score each field
                 for i, feature in enumerate(FEATURES):
-                    t = timestamp - lastAnomaly[feature]
+                    # If not anomalous, don't score
+                    if clusters[feature].contains(packet[i]):
+                        continue
+
                     if packet[i] != -1:
-                        scores[i] = t * nr[feature]
+                        t = timestamp - lastAnomaly[feature]
+                        dayScores[packetNum][i] = (t[0] * nr[feature][0] /
+                                                   nr[feature][1])
+                        lastAnomaly[feature] = timestamp
 
-                        # If anomalous, reset t
-                        if not clusters[feature].contains(packet[i]):
-                            lastAnomaly[feature] = timestamp
+            # Score the packet and store as last element
+            dayScores[:, -1] = np.sum(dayScores[:, 0:-1], axis=1)
 
-                # Score the packet and store as last element
-                scores[-1] = _normalizeScore(np.sum(scores))
+            # If the total score of the packet is very small, set it to one so
+            # that the resulting normalization doesn't fail.
+            dayScores[:, -1][dayScores[:, -1] < 1] = 1
 
             results.append((day[0], day[1], dayScores))
 
@@ -159,10 +166,16 @@ def _outputToCSV(results, filename, threshold=0.5):
                 datetime = time.strftime('%Y-%m-%d %H:%M:%S',
                                          time.localtime(timestamp))
                 destIP = socket.inet_ntoa(struct.pack('!L', packet[15]))
-                score = scores[-1]
-                # Most anomalous?
+                mostAnomalous = FEATURES[scores[0:-1].argmax()]
+                percentage = scores[0:-1].max() / scores[-1]
+                score = _normalizeScore(scores[-1])
+
                 if score >= threshold:
-                    writer.writerow([datetime, destIP, score])
+                    writer.writerow([datetime,
+                                     destIP,
+                                     score,
+                                     mostAnomalous,
+                                     percentage])
 
     outfile.close()
     print("Output results to file!")
@@ -176,7 +189,6 @@ def main():
     # Clustering header data
     clusters = _clusterTraining(week3Data)
     results = _runScoring(clusters, testData)
-    #  results = _runScoring(None, None)
     _outputToCSV(results, "data/results.csv", threshold=0.5)
 
 
