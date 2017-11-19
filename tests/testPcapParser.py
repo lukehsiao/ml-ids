@@ -1,5 +1,5 @@
 import unittest
-from utils.parser import np_parse_pcap
+from utils import np_parse_pcap
 
 
 class TestPcapParser(unittest.TestCase):
