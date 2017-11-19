@@ -5,6 +5,8 @@ from pcap_parser import *
 import numpy as np
 from multiprocessing import Pool, cpu_count
 
+from all_attackIDs import all_attackIDs
+
 def make_label_data():
     proj_dir = os.path.expandvars('$ML_IDS_DIR')
     test_data_dir = os.path.join(proj_dir, 'data/testing')
@@ -28,12 +30,13 @@ def make_label_data():
     result = p.map(label_packets, input_data)
 
 def read_attack_file(filename):
-    label_fmat = r'(?P<ID>[\d]+\.\d{6})(?P<date>\d{2}/\d{2}/\d{4}) (?P<time>\d{2}:\d{2}:\d{2})  (?P<duration>\d{2}:\d{2}:\d{2}) (?P<dstIP>\d{3}\.\d{3}\.\d{3}\.\d{3})(?P<name>.{10}) (?P<insider>.{8}) (?P<manual>.{7}) (?P<console>.{7}) (?P<success>.{8}) (?P<aDump>.{6}) (?P<oDump>.{5}) (?P<iDumpBSM>.{9}) (?P<SysLogs>.{7}) (?P<FSListing>.{9}) (?P<StealthyNew>.{12}) (?P<Category>.*$)'
+#    label_fmat = r'(?P<ID>[\d]+\.\d{6})(?P<date>\d{2}/\d{2}/\d{4}) (?P<time>\d{2}:\d{2}:\d{2})  (?P<duration>\d{2}:\d{2}:\d{2}) (?P<dstIP>\d{3}\.\d{3}\.\d{3}\.\d{3})(?P<name>.{10}) (?P<insider>.{8}) (?P<manual>.{7}) (?P<console>.{7}) (?P<success>.{8}) (?P<aDump>.{6}) (?P<oDump>.{5}) (?P<iDumpBSM>.{9}) (?P<SysLogs>.{7}) (?P<FSListing>.{9}) (?P<StealthyNew>.{12}) (?P<Category>.*$)'
+    label_fmat = r'(?P<ID>[\d]+\.\d{6})(?P<date>\d{2}/\d{2}/\d{4}) (?P<time>\d{2}:\d{2}:\d{2})  (?P<duration>\d{2}:\d{2}:\d{2}) (?P<dstIP>\d*\.\d*\.\d*\.[\d\*]*)(?P<name>[^ ]*) .*'
     with open(filename) as f:
         contents = f.read()
     matches = re.finditer(label_fmat, contents, re.M)
-    attack_list = make_attack_list(matches)
-    return attack_list
+    attack_list, num_unique_attacks = make_attack_list(matches)
+    return attack_list, num_unique_attacks
     
 
 def label_packets(input_tuple):
@@ -41,7 +44,7 @@ def label_packets(input_tuple):
     # read pcap file
     packets, times = np_parse_pcap_worker(pcap_file)
     # read attack_file
-    attacks = read_attack_file(attack_file)
+    attacks, num_unique_attacks = read_attack_file(attack_file)
 
 #    packets, times, attacks = input_tuple
     num_pkts, num_features = packets.shape
@@ -55,6 +58,7 @@ def label_packets(input_tuple):
         time_high_elems = np.less_equal(times, dic['range'][0])
         time_elems = np.logical_and(time_low_elems, time_high_elems)
         dstIPs = np.dot(packets, dstIP_indicator)
+        #TODO: need to fix this because dic['dstIP'] is now a string not int and may be wildcard
         dstIP_elems = np.equal(dstIPs, dic['dstIP'])
         # array of bools indicating which packets are involved in the attack
         attack_elems = np.logical_and(time_elems, dstIP_elems)
@@ -80,16 +84,24 @@ def label_packets(input_tuple):
 
 def make_attack_list(matches):
     result = []
+    attackIDs = []
     for m in matches:
         attack = {}
         startTime = datetime_to_tstamp(m.group('date'), m.group('time'))
         endTime = startTime + dur_to_sec(m.group('duration'))
         attack['range'] = (startTime, endTime)
-        attack['dstIP'] = ip2int(m.group('dstIP'))
+        attack['dstIP'] = m.group('dstIP')
         attack['name'] = m.group('name')
         attack['ID'] = m.group('ID')
         result.append(attack)
-    return result
+        if m.group('ID') not in attackIDs:
+            attackIDs.append(m.group('ID'))
+
+    for a in all_attackIDs:
+        if a not in attackIDs:
+            print a
+    
+    return result, len(attackIDs)
 
 
 def ip2int(addr):
@@ -103,8 +115,23 @@ def int2ip(addr):
     return socket.inet_ntoa(struct.pack("!I", addr))
 
 
-
-
+def checkIPsEqual(ip1, ip2):
+    """Check if two IP addresses are equal, may be wildcard for last byte
+    Inputs:
+      - ip1 and ip2 : two IP addresses as strings
+    """
+    ip1_vals = ip1.split('.')    
+    ip2_vals = ip2.split('.')    
+    if (len(ip1_vals) != 4 and len(ip2_vals) != 4):
+        print >> sys.stderr, "ERROR: checkIPsEqual: invalid IP address"
+        sys.exit(1)
+    if ip1_vals[3] == '*' or ip2_vals[3] == '*':
+        ip1_vals = map(int, ip1_vals[0:3])
+        ip2_vals = map(int, ip2_vals[0:3])
+    else:
+        ip1_vals = map(int, ip1_vals)
+        ip2_vals = map(int, ip2_vals)
+    return ip1_vals == ip2_vals
 
 
 
