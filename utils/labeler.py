@@ -5,8 +5,6 @@ from pcap_parser import *
 import numpy as np
 from multiprocessing import Pool, cpu_count
 
-from all_attackIDs import all_attackIDs
-
 def make_label_data():
     proj_dir = os.path.expandvars('$ML_IDS_DIR')
     test_data_dir = os.path.join(proj_dir, 'data/testing')
@@ -96,11 +94,6 @@ def make_attack_list(matches):
         result.append(attack)
         if m.group('ID') not in attackIDs:
             attackIDs.append(m.group('ID'))
-
-    for a in all_attackIDs:
-        if a not in attackIDs:
-            print a
-    
     return result, len(attackIDs)
 
 
