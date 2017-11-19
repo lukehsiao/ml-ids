@@ -20,6 +20,7 @@ def check_results(results_file, attacks_file, threshold, make_plots):
     num_FP_per_day = []
     for thresh in threshold_vals:
         total_unique_TP, total_TP_per_day, total_FP, total_FP_per_day = classify_results(final_results, thresh)
+        print "total_unique_TP = {}".format(total_unique_TP)
         pc_attacks_detected.append(float(total_unique_TP)/float(num_unique_attacks)*100)
         num_FP.append(total_FP)
         num_FP_per_day.append(total_FP_per_day)
@@ -208,11 +209,21 @@ def read_results(results_file):
     with open(results_file) as f:
         contents = f.read()
     matches = re.finditer(result_fmat, contents, re.M)
-    results = [m.groupdict() for m in matches] 
+    results = [m.groupdict() for m in matches]
     for dic in results:
         dic['timestamp'] = datetime_to_tstamp(dic['date'], dic['time'])
         dic['score'] = float(dic['score'])
     return results
+
+def get_attack_info(result_dic, attack_list, threshold=0.5, leeway=60):
+    if result_dic['score'] <= threshold:
+        return '', '', 'N'
+    tstamp = result_dic['timestamp']
+    dstIP = result_dic['dstIP']
+    for attack in attack_list:
+        if tstamp >= (attack['range'][0] - leeway) and tstamp <= (attack['range'][1] + leeway) and checkIPsEqual(dstIP, attack['dstIP']):
+            return attack['ID'], attack['name'], 'TP'
+    return '', '', 'FP'
 
 
 def main():
