@@ -69,7 +69,7 @@ def parse_pcap(filename):
     return plist
 
 
-def np_parse_pcap(pcap_list):
+def np_parse_pcap(pcap_list, outDir=None):
     """Parse all of the provided pcap files
     Inputs:
       - list of pcap filenames
@@ -84,8 +84,11 @@ def np_parse_pcap(pcap_list):
         pcap_list = [pcap_list]
 
     p = Pool(cpu_count())
-    result = p.map(np_parse_pcap_worker, pcap_list)
-    return result
+    data_list = p.map(np_parse_pcap_worker, pcap_list)
+    if outDir is not None:
+        # save the results
+        write_results(outDir, data_list, pcap_list)
+    return data_list
 
 
 def np_parse_pcap_worker(filename):
@@ -218,3 +221,18 @@ def parse_udp(pkt_bytes):
     udp['length'] = struct.unpack(">H", pkt_bytes[4:6])[0]
     udp['chksum'] = struct.unpack(">H", pkt_bytes[6:8])[0]
     return udp, pkt_bytes[total_len:]
+
+
+def write_results(outDir, data_list, pcap_list):
+    """
+    Save the numpy design matrices and time vectors
+    """
+    for (pkts, time), pcap_file in zip(data_list, pcap_list):
+        prefix = pcap_file.split('.')[0]
+        pkts_file = os.path.join(outDir, '{}_all_pkts'.format(prefix))
+        time_file = os.path.join(outDir, '{}_all_times'.format(prefix))
+        np.save(pkts_file, pkts)
+        np.save(time_file, time)
+
+
+
