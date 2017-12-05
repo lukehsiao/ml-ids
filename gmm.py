@@ -67,11 +67,15 @@ def main():
     week3Data = _parseTrainingData()
     #  testData = _parseTestingData()
 
+    # Normalize the test data
+
+
     print("Training the Gaussian Mixture...")
     gmm = GaussianMixture(n_components=4,
                           covariance_type='full',
                           reg_covar=1,
-                          verbose=1).fit(week3Data)
+                          verbose=1,
+                          verbose_interval=2).fit(week3Data)
     # Free up some memory after we've trained
     del week3Data
 
