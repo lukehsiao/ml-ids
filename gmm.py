@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 """Network intrusion detection using a GMM."""
 from __future__ import print_function, division
+import cPickle as pickle
 import csv
 import numpy as np
 from utils import np_parse_pcap, FEATURES
@@ -119,12 +120,17 @@ def main():
     X_train = scaler.transform(week3Data[:, 1:])
     del week3Data
 
-    print("Training the Gaussian Mixture...")
-    gmm = GaussianMixture(n_components=16,
-                          covariance_type='full',
-                          #  reg_covar=1,
-                          verbose=1,
-                          verbose_interval=2).fit(X_train)
+    try:
+        gmm = pickle.load(open("data/gmm.pkl", "rb"))
+        print("Loading pre-trained GMM...")
+    except IOError:
+        print("Training the Gaussian Mixture...")
+        gmm = GaussianMixture(n_components=16,
+                              covariance_type='full',
+                              #  reg_covar=1,
+                              verbose=1,
+                              verbose_interval=2).fit(X_train)
+        pickle.dump(gmm, open("data/gmm.pkl", "wb"))
     del X_train
 
     X_orig = _parseTestingData()
