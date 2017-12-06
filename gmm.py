@@ -1,10 +1,13 @@
 #!/usr/bin/env python
 """Network intrusion detection using a GMM."""
 from __future__ import print_function, division
+import csv
 import numpy as np
 import pdb
 from utils import np_parse_pcap, FEATURES
 from utils import tstamp_to_datetime
+import socket
+import struct
 from sklearn.mixture import GaussianMixture
 from sklearn import preprocessing
 
@@ -79,25 +82,18 @@ def _outputToCSV(results, filename, threshold=0.5):
     outfile = open(filename, "wb")
     writer = csv.writer(outfile)
 
-    for day in results:
-        for packet, timestamp, scores in zip(day[0], day[1], day[2]):
-            datetime = tstamp_to_datetime(timestamp)
+    for packet in results:
+        datetime = tstamp_to_datetime(packet[0])
 
-            if packet[15] != -1:
-                destIP = socket.inet_ntoa(struct.pack('!L', packet[15]))
-            else:
-                destIP = "0.0.0.0"
-            mostAnomalous = FEATURES[scores[0:-1].argmax()]
-            percentage = scores[0:-1].max() / scores[-1]
-            score = _normalizeScore(scores[-1])
+        if packet[16] != -1:
+            destIP = socket.inet_ntoa(struct.pack('!L', packet[16]))
+        else:
+            destIP = "0.0.0.0"
 
-            if score >= threshold:
-                writer.writerow([datetime[0],
-                                 datetime[1],
-                                 destIP,
-                                 score,
-                                 mostAnomalous,
-                                 percentage])
+        writer.writerow([datetime[0],
+                         datetime[1],
+                         destIP,
+                         packet[-1]])
 
     outfile.close()
     print("Output results to file!")
@@ -115,7 +111,6 @@ def _score(probs):
 
 def main():
     """Run the IDS using GMM experiment."""
-    threshold = 0.3
     week3Data = _parseTrainingData()
 
     # Scale the training data (ignore the timestamp column)
@@ -131,17 +126,20 @@ def main():
                           verbose_interval=2).fit(X_train)
     del X_train
 
-    X_test = _parseTestingData()
+    X_orig = _parseTestingData()
     print("Scaling the test data...")
-    X_test[:, 1:] = scaler.transform(X_test[:, 1:])
+    X_test = scaler.transform(X_orig[:, 1:])
 
     print("Calculating prosterior probabilies of test data...")
-    probs = gmm.predict_proba(X_test[:, 1:])
+    probs = gmm.predict_proba(X_test)
+    del X_test
 
     scores = _score(probs)
+    del probs
 
-    #probs[scores >= threshold]
+    results = np.hstack((X_orig, scores.reshape((scores.shape[0], 1))))
 
+    _outputToCSV(results, "gmm_results_max.csv")
 
     pdb.set_trace()
 
