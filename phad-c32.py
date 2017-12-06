@@ -11,7 +11,7 @@ import struct
 import time
 from utils import Clusterer
 from utils import np_parse_pcap, FEATURES
-from utils.time_functions import tstamp_to_datetime
+from utils import tstamp_to_datetime
 
 
 def _clusterTraining(trainingDays, verbose=False):
