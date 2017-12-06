@@ -3,7 +3,6 @@
 from __future__ import print_function, division
 import csv
 import numpy as np
-import pdb
 from utils import np_parse_pcap, FEATURES
 from utils import tstamp_to_datetime
 import socket
@@ -76,7 +75,7 @@ def _parseTestingData():
     return allData
 
 
-def _outputToCSV(results, filename, threshold=0.5):
+def _outputToCSV(results, filename, threshold=1e-8):
     """Classify all attacks with a score above threshold as an attack."""
 
     outfile = open(filename, "wb")
@@ -90,10 +89,12 @@ def _outputToCSV(results, filename, threshold=0.5):
         else:
             destIP = "0.0.0.0"
 
-        writer.writerow([datetime[0],
-                         datetime[1],
-                         destIP,
-                         packet[-1]])
+        # Only write the most improbable packets
+        if packet[-1] < (1.0 - threshold):
+            writer.writerow([datetime[0],
+                             datetime[1],
+                             destIP,
+                             1. - packet[-1]])
 
     outfile.close()
     print("Output results to file!")
@@ -139,9 +140,8 @@ def main():
 
     results = np.hstack((X_orig, scores.reshape((scores.shape[0], 1))))
 
-    _outputToCSV(results, "gmm_results_max.csv")
+    _outputToCSV(results, "data/gmm_results_max.csv")
 
-    pdb.set_trace()
 
 if __name__ == '__main__':
     main()
