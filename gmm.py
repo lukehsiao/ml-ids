@@ -15,7 +15,7 @@ from sklearn import preprocessing
 def _parseTrainingData():
     """Parse the week 3 training data."""
     try:
-        allData = np.load(open("data/gmm_train_data.npy", "rb"))
+        allData = np.load(open("data/train_data.npy", "rb"))
         print("Loading pre-parsed training data...", end='')
     except IOError:
         print("Parsing the training data...", end='')
@@ -37,7 +37,7 @@ def _parseTrainingData():
         trainTimes = np.vstack([times for (pkts, times) in allDays])
 
         allData = np.hstack((trainTimes, trainData))
-        np.save(open("data/gmm_train_data.npy", "wb"), allData)
+        np.save(open("data/train_data.npy", "wb"), allData)
 
     print("Done!")
     return allData
@@ -45,7 +45,7 @@ def _parseTrainingData():
 def _parseTestingData():
     """Parse week 4 and 5 of testing data."""
     try:
-        allData = np.load(open("data/gmm_test_data.npy", "rb"))
+        allData = np.load(open("data/test_data.npy", "rb"))
         print("Loading pre-parsed training data...", end='')
     except IOError:
         print("Parsing the testing data...", end='')
@@ -70,7 +70,7 @@ def _parseTestingData():
         testTimes = np.vstack([times for (pkts, times) in allDays])
         allData = np.hstack((testTimes, testData))
 
-        np.save(open("data/gmm_test_data.npy", "wb"), allData)
+        np.save(open("data/test_data.npy", "wb"), allData)
 
     print("Done!")
     return allData
