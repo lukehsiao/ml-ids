@@ -39,7 +39,7 @@ def check_results(results_file, attacks_file, threshold, make_plots, make_table)
     if make_plots:
         plot_results(data)
     elif make_table:
-        print_results(final_results, data, pthresh=threshold)
+        print_results(final_results, data)
 
     return data
 
