@@ -9,7 +9,6 @@ import numpy as np
 from sklearn.preprocessing import MinMaxScaler
 import socket
 import struct
-import time
 from utils import Clusterer
 from utils import np_parse_pcap, FEATURES
 from utils import tstamp_to_datetime
@@ -117,6 +116,9 @@ def _parseTrainingData():
 
 def _normalizeScore(score):
     """Normalize score on log scale as done in paper."""
+    # NOTE: This function is deprecated. This is the equation used in the
+    # original paper, but it doesn't make any sense (results in scores that
+    # are not in [0, 1]. Instead, we've moved to the MinMaxScaler from sklearn
     return (0.1 * log10(score) - 0.6)
 
 
@@ -153,10 +155,6 @@ def _runScoring(clusters, testData):
 
         # Score the packet and store as last element
         scores[:, -1] = np.sum(scores[:, 0:-1], axis=1)
-
-        # If the total score of the packet is very small, set it to one so
-        # that the resulting normalization doesn't fail.
-        #  dayScores[:, -1][dayScores[:, -1] < 1] = 1
 
         results = np.hstack((testData, scores))
         np.save(open("data/phad_results.npy", "wb"), results)
