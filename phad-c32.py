@@ -130,7 +130,6 @@ def _runScoring(clusters, testData):
         print("Loading cached results...", end='')
     except IOError:
         print("Running attack detection...", end='')
-
         # Initialize last anomaly time to 1 sec before time of first packet.
         # The first column of testData is the timestamp.
         lastAnomaly = {key: testData[0][0] - 1 for key in FEATURES}
@@ -156,6 +155,10 @@ def _runScoring(clusters, testData):
         # Score the packet and store as last element
         scores[:, -1] = np.sum(scores[:, 0:-1], axis=1)
 
+        # If the total score of the packet is very small, set it to one so
+        # that the resulting normalization doesn't fail.
+        scores[:, -1][scores[:, -1] < 1] = 1
+
         results = np.hstack((testData, scores))
         np.save(open("data/phad_results.npy", "wb"), results)
 
@@ -173,26 +176,29 @@ def _outputToCSV(results, filename, threshold=0.5):
     # Normalize Scores:
     scaler = MinMaxScaler()
     origScores = results[:, -1].reshape(-1, 1)
-    np.log10(origScores, out=origScores)
-    scaler.fit(results[:, -1].reshape(-1, 1))
-    scaledScores = scaler.transform(results[:, -1].reshape(-1, 1))
+    logScores = np.log10(origScores)
+    scaler.fit(logScores)
+    scaledScores = scaler.transform(logScores)
     for packet, scaledScore in zip(results, scaledScores):
+        #  for packet in results:
         datetime = tstamp_to_datetime(packet[0])
         scores = packet[34:]
 
         if packet[16] != -1:
-            destIP = socket.inet_ntoa(struct.pack('!L', packet[15]))
+            destIP = socket.inet_ntoa(struct.pack('!L', packet[16]))
         else:
             destIP = "0.0.0.0"
 
         mostAnomalous = FEATURES[scores[0:-1].argmax()]
         percentage = scores[0:-1].max() / scores[-1]
+        #  score = _normalizeScore(scores[-1])
 
         if scaledScore >= threshold:
             writer.writerow([datetime[0],
                              datetime[1],
                              destIP,
                              scaledScore[0],
+                             #  score,
                              mostAnomalous,
                              percentage])
 
