@@ -12,6 +12,7 @@ import struct
 from utils import Clusterer
 from utils import np_parse_pcap, FEATURES
 from utils import tstamp_to_datetime
+from check_results import *
 
 
 def _clusterTraining(trainingData, verbose=False):
@@ -167,11 +168,18 @@ def _runScoring(clusters, testData):
     return results
 
 
-def _outputToCSV(results, filename, threshold=0.5):
+def _outputToCSV(results, filename, threshold=0.5, feat=None):
     """Classify all attacks with a score above threshold as an attack."""
 
     outfile = open(filename, "wb")
     writer = csv.writer(outfile)
+
+    # Zero out a feature
+    if feat:
+        scoreMat = results[:, 34:]
+        results[:, -1] -= scoreMat[:, feat]
+        scoreMat[:, feat] = 0
+        scoreMat[:, -1][scoreMat[:, -1] < 1] = 1
 
     # Normalize Scores:
     scaler = MinMaxScaler()
@@ -216,7 +224,19 @@ def main():
     testData = _parseTestingData()
     results = _runScoring(clusters, testData)
     del testData
-    _outputToCSV(results, "data/phad_results.csv", threshold=0.5)
+    outfile = open("data/phad_ablation.csv", "wb")
+    writer = csv.writer(outfile)
+    for feat in xrange(33):
+        _outputToCSV(results, "data/phad_results.csv", threshold=0.5, feat=feat)
+        data = check_results('data/phad_results.csv',
+                             'data/master-listfile-condensed.txt',
+                             '0.67:0.76:100',
+                             False,
+                             False)
+        print(">>> %s %f" % (FEATURES[feat], max(data['f1s'])))
+        writer.writerow([FEATURES[feat], max(data['f1s'])])
+
+    outfile.close()
 
 
 if __name__ == '__main__':
