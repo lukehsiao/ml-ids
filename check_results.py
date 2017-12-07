@@ -8,7 +8,7 @@ import numpy as np
 import matplotlib
 import matplotlib.pyplot as plt
 
-def check_results(results_file, attacks_file, threshold, make_plots):
+def check_results(results_file, attacks_file, threshold, make_plots, make_table):
     threshold_vals = parse_threshold(threshold)
     print "Using threshold = {}".format(threshold_vals)
     attack_list, num_unique_attacks = read_attack_file(attacks_file)
@@ -34,8 +34,10 @@ def check_results(results_file, attacks_file, threshold, make_plots):
 
     if make_plots:
         plot_results(data)
-    else:
+    elif make_table:
         print_results(final_results, data)
+
+    return data
 
 def plot_results(data):
     # plot the pc_attacks_detected vs threshold_vals
@@ -43,18 +45,26 @@ def plot_results(data):
     plt.plot(data['threshold_vals'], data['pc_attacks_detected'], marker='o')
     plt.xlabel('Threshold Values')
     plt.ylabel('% of Total Attacks Detected')
-    plt.title('% Total Attacks Detected vs. Threshold Value')
+#    plt.title('% Total Attacks Detected vs. Threshold Value')
 
     # plot the total # false positives vs threshold values
     plt.figure()
     plt.semilogy(data['threshold_vals'], data['num_FP'], marker='o')
     plt.xlabel('Threshold Values')
     plt.ylabel('Total # False Positives')
-    plt.title('Total # False Positives vs. Threshold Value')
+#    plt.title('Total # False Positives vs. Threshold Value')
+
+    plt.figure()
+    plt.semilogx(data['num_FP'], data['pc_attacks_detected'], marker='o', linewidth=5)
+    plt.xlabel('Total # False Positives')
+    plt.ylabel('% of Total Attacks Detected')
+    plt.yticks([0, 10, 20, 30, 40, 50])
+    plt.xlim(max(data['num_FP']), 0)
+    plt.subplots_adjust(bottom=0.2)
 
     font = {'family' : 'normal',
             'weight' : 'bold',
-            'size'   : 22}
+            'size'   : 35}
     matplotlib.rc('font', **font)
 
     plt.show()
@@ -168,13 +178,13 @@ def get_attack_info(result_dic, attack_list, leeway=60):
 def getScoreVal(item):
     return -item['score']
 
-def print_results(final_results, data, pthresh=0.5):
-
+def print_results(final_results, data, pthresh=0.31):
     threshold_vals = data['threshold_vals']
     pc_attacks_detected = data['pc_attacks_detected']
     num_FP = data['num_FP']
     num_FP_per_day = data['num_FP_per_day']
     num_TP_per_day = data['num_TP_per_day']
+    detected_attackNames = []
     title_fmat = '{: >12} {: >10} {: >18}  {: >6} {: >6} {: >25} {: >25}'
     line_fmat = '{: >12} {: >10} {: >18}  {:.6f} {: >4} {: >25} {: >25}'
     count = 0
@@ -191,6 +201,9 @@ def print_results(final_results, data, pthresh=0.5):
         if count < 20:
             print line_fmat.format(res['date'], res['time'], res['dstIP'], res['score'], class_type, res['attack_name'], res['anom_field'] + ' ' + str(int(float(res['anom_field_pc'])*100)) + '%')
             count += 1
+        if res['attack_name'] not in detected_attackNames and res['score'] >= pthresh:
+            detected_attackNames.append(res['attack_name'])
+    print "# detected attackNames = {}".format(len(detected_attackNames))
     print "Detection Results:"
     print "------------------"
     line_fmat = "{: >25} {: >25} {: >25}"
@@ -205,6 +218,7 @@ def print_results(final_results, data, pthresh=0.5):
 
 def read_results(results_file):
     result_fmat = r'(?P<date>.*),(?P<time>.*),(?P<dstIP>.*),(?P<score>.*),(?P<anom_field>.*),(?P<anom_field_pc>[\d\.]*)[\r\n$]'
+#    result_fmat = r'(?P<date>.*),(?P<time>.*),(?P<dstIP>.*),(?P<score>.*)[\r\n$]'
     with open(results_file) as f:
         contents = f.read()
     matches = re.finditer(result_fmat, contents, re.M)
@@ -222,9 +236,10 @@ def main():
     parser.add_argument('attacks_file', type=str, help="the actual attacks file")
     parser.add_argument('--thresh', type=str, default='0.5:0.5:1', help="range of thresholds to try. Format: start:stop:num_points, default: 0.5:0.5:1")
     parser.add_argument('--plot', action='store_true', help="make plots")
+    parser.add_argument('--table', action='store_true', help="make table")
     args = parser.parse_args()
 
-    check_results(args.results_file, args.attacks_file, args.thresh, args.plot)
+    check_results(args.results_file, args.attacks_file, args.thresh, args.plot, args.table)
 
 
 if __name__ == '__main__':
