@@ -6,6 +6,7 @@ import cPickle as pickle
 import csv
 from math import log10
 import numpy as np
+from sklearn.preprocessing import MinMaxScaler
 import socket
 import struct
 import time
@@ -17,7 +18,7 @@ from utils import tstamp_to_datetime
 def _clusterTraining(trainingDays, verbose=False):
 
     try:
-        features = pickle.load(open("data/clusters.p", "rb"))
+        features = pickle.load(open("data/phad_clusters.pkl", "rb"))
         print("Loading pre-parsed cluster data...", end='')
     except IOError:
         print("Clustering the header fields...", end='')
@@ -35,7 +36,7 @@ def _clusterTraining(trainingDays, verbose=False):
                         # than processing them all together.
                         features[feature].add(packetHdrs[i])
 
-        pickle.dump(features, open("data/clusters.p", "wb"))
+        pickle.dump(features, open("data/phad_clusters.pkl", "wb"))
 
     print("Done!")
 
@@ -52,7 +53,7 @@ def _clusterTraining(trainingDays, verbose=False):
 def _parseTestingData():
     """Parse week 4 and 5 of testing data."""
     try:
-        testData = np.load(open("data/test_data.npy", "rb"))
+        testData = np.load(open("data/phad_test_data.npy", "rb"))
         print("Loading pre-parsed training data...", end='')
     except IOError:
         print("Parsing the testing data...", end='')
@@ -80,7 +81,7 @@ def _parseTestingData():
 def _parseTrainingData():
     """Parse the week 3 training data."""
     try:
-        week3Data = np.load(open("data/week3_data.npy", "rb"))
+        week3Data = np.load(open("data/phad_train_data.npy", "rb"))
         print("Loading pre-parsed training data...", end='')
     except IOError:
         print("Parsing the training data...", end='')
@@ -97,7 +98,7 @@ def _parseTrainingData():
         ]
         week3Data = np_parse_pcap(trainingFiles)
 
-        np.save(open("data/week3_data.npy", "wb"), week3Data)
+        np.save(open("data/phad_train_data.npy", "wb"), week3Data)
 
     print("Done!")
     return week3Data
@@ -118,7 +119,7 @@ def _runScoring(clusters, testData):
         print("Running attack detection...", end='')
         results = []
 
-        # Initialize last anomaly time to 1 sec before time of first packet
+        #Initialize last anomaly time to 1 sec before time of first packet
         lastAnomaly = {key: testData[0][1][1] - 1 for key in FEATURES}
         nr = {key: (clusters[key].getTotal(), clusters[key].getDistinct()) for
               key in FEATURES}
@@ -162,8 +163,13 @@ def _outputToCSV(results, filename, threshold=0.5):
     outfile = open(filename, "wb")
     writer = csv.writer(outfile)
 
+    # Normalize Scores:
+    scaler = MinMaxScaler()
     for day in results:
+        import pdb; pdb.set_trace()
+
         for packet, timestamp, scores in zip(day[0], day[1], day[2]):
+            scores[-1] = scaler.transform(scores[-1])
             datetime = tstamp_to_datetime(timestamp)
 
             if packet[15] != -1:
@@ -172,7 +178,7 @@ def _outputToCSV(results, filename, threshold=0.5):
                 destIP = "0.0.0.0"
             mostAnomalous = FEATURES[scores[0:-1].argmax()]
             percentage = scores[0:-1].max() / scores[-1]
-            score = _normalizeScore(scores[-1])
+            #  score = _normalizeScore(scores[-1])
 
             if score >= threshold:
                 writer.writerow([datetime[0],
@@ -194,7 +200,7 @@ def main():
     # Clustering header data
     clusters = _clusterTraining(week3Data)
     results = _runScoring(clusters, testData)
-    _outputToCSV(results, "data/results.csv", threshold=0.2)
+    _outputToCSV(results, "data/phad_results.csv", threshold=0.2)
 
 
 if __name__ == '__main__':
