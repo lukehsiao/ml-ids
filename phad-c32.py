@@ -226,11 +226,20 @@ def main():
     del testData
     outfile = open("data/phad_ablation.csv", "wb")
     writer = csv.writer(outfile)
+    _outputToCSV(results, "data/phad_results.csv", threshold=0.5, feat=None)
+    data = check_results('data/phad_results.csv',
+                         'data/master-listfile-condensed.txt',
+                         '0.60:0.80:400',
+                         False,
+                         False)
+    print(">>> %s %f" % ("All", max(data['f1s'])))
+    writer.writerow(["All", max(data['f1s'])])
+
     for feat in xrange(33):
         _outputToCSV(results, "data/phad_results.csv", threshold=0.5, feat=feat)
         data = check_results('data/phad_results.csv',
                              'data/master-listfile-condensed.txt',
-                             '0.67:0.76:100',
+                             '0.60:0.80:400',
                              False,
                              False)
         print(">>> %s %f" % (FEATURES[feat], max(data['f1s'])))
