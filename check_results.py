@@ -10,7 +10,6 @@ import matplotlib.pyplot as plt
 
 def check_results(results_file, attacks_file, threshold, make_plots, make_table):
     threshold_vals = parse_threshold(threshold)
-    print "Using threshold = {}".format(threshold_vals)
     attack_list, num_unique_attacks = read_attack_file(attacks_file)
     raw_results = read_results(results_file)
     final_results = get_final_results(raw_results, attack_list)

@@ -83,6 +83,7 @@ def label_packets(input_tuple):
 def make_attack_list(matches):
     result = []
     attackIDs = []
+    attackNames = []
     for m in matches:
         attack = {}
         startTime = datetime_to_tstamp(m.group('date'), m.group('time'))
@@ -94,6 +95,9 @@ def make_attack_list(matches):
         result.append(attack)
         if m.group('ID') not in attackIDs:
             attackIDs.append(m.group('ID'))
+        if m.group('name') not in attackNames:
+            attackNames.append(m.group('name'))
+
     return result, len(attackIDs)
 
 

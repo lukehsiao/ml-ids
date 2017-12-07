@@ -18,11 +18,11 @@ def datetime_to_tstamp(date, time, adjust=True):
     time_fmat = r'(?P<hour>.{2}):(?P<min>.{2}):(?P<sec>.{2})'
     d = re.search(date_fmat, date)
     if (d is None):
-        print >> sys.stderr, "ERROR: datetime_to_tstamp: invalid date string"
+        print >> sys.stderr, "ERROR: datetime_to_tstamp: invalid date string: {}".format(date)
         return
     t = re.search(time_fmat, time)
     if (t is None):
-        print >> sys.stderr, "ERROR: datetime_to_tstamp: invalid time string"
+        print >> sys.stderr, "ERROR: datetime_to_tstamp: invalid time string: {}".format(time)
         return
     dt = datetime(int(d.group('year')), int(d.group('month')), int(d.group('day')), int(t.group('hour')), int(t.group('min')), int(t.group('sec')))
     if adjust:
