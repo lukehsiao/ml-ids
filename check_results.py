@@ -2,8 +2,8 @@
 
 import sys, os, re
 import argparse
-from labeler import read_attack_file, ip2int, int2ip, checkIPsEqual
-from time_functions import datetime_to_tstamp
+from utils.labeler import read_attack_file, ip2int, int2ip, checkIPsEqual
+from utils.time_functions import datetime_to_tstamp
 import numpy as np
 import matplotlib
 import matplotlib.pyplot as plt
@@ -148,14 +148,14 @@ def get_attack_info(result_dic, attack_list, leeway=60):
       - attack_list : list of attacks
 
     Returns:
-      - isAttack - True if the result corresponds to an actual attack 
+      - isAttack - True if the result corresponds to an actual attack
       - attackID - string of attack ID, '' if not attack
       - attackName - string of attack name, '' if not an attack
     """
     isAttack = False
     attackID = ''
     attackName = ''
-    tstamp = result_dic['timestamp'] 
+    tstamp = result_dic['timestamp']
     dstIP = result_dic['dstIP']
     for attack in attack_list:
         if tstamp >= (attack['range'][0] - leeway) and tstamp <= (attack['range'][1] + leeway) and checkIPsEqual(dstIP, attack['dstIP']):
@@ -208,7 +208,7 @@ def read_results(results_file):
     with open(results_file) as f:
         contents = f.read()
     matches = re.finditer(result_fmat, contents, re.M)
-    results = [m.groupdict() for m in matches] 
+    results = [m.groupdict() for m in matches]
     for dic in results:
         dic['timestamp'] = datetime_to_tstamp(dic['date'], dic['time'])
         dic['score'] = float(dic['score'])
