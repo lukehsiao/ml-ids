@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-
+from __future__ import division
 import sys, os, re
 import argparse
 from utils.labeler import read_attack_file, ip2int, int2ip, checkIPsEqual
@@ -17,12 +17,16 @@ def check_results(results_file, attacks_file, threshold, make_plots, make_table)
     num_TP_per_day = []
     num_FP = []
     num_FP_per_day = []
+    f1s = []
     for thresh in threshold_vals:
         total_unique_TP, total_TP_per_day, total_FP, total_FP_per_day = classify_results(final_results, thresh)
         pc_attacks_detected.append(float(total_unique_TP)/float(num_unique_attacks)*100)
         num_FP.append(total_FP)
         num_FP_per_day.append(total_FP_per_day)
         num_TP_per_day.append(total_TP_per_day)
+        recall = total_unique_TP / num_unique_attacks
+        precision = total_unique_TP / (total_unique_TP + total_FP)
+        f1s.append(2 * (recall * precision) / (recall + precision))
 
     data = {}
     data['threshold_vals'] = threshold_vals
@@ -30,11 +34,12 @@ def check_results(results_file, attacks_file, threshold, make_plots, make_table)
     data['num_FP'] = num_FP
     data['num_FP_per_day'] = num_FP_per_day
     data['num_TP_per_day'] = num_TP_per_day
+    data['f1s'] = f1s
 
     if make_plots:
         plot_results(data)
     elif make_table:
-        print_results(final_results, data)
+        print_results(final_results, data, pthresh=threshold)
 
     return data
 
@@ -183,6 +188,7 @@ def print_results(final_results, data, pthresh=0.31):
     num_FP = data['num_FP']
     num_FP_per_day = data['num_FP_per_day']
     num_TP_per_day = data['num_TP_per_day']
+    f1s = data['f1s']
     detected_attackNames = []
     title_fmat = '{: >12} {: >10} {: >18}  {: >6} {: >6} {: >25} {: >25}'
     line_fmat = '{: >12} {: >10} {: >18}  {:.6f} {: >4} {: >25} {: >25}'
@@ -205,10 +211,10 @@ def print_results(final_results, data, pthresh=0.31):
     print "# detected attackNames = {}".format(len(detected_attackNames))
     print "Detection Results:"
     print "------------------"
-    line_fmat = "{: >25} {: >25} {: >25}"
-    print line_fmat.format('threshold val', '% attacks detected', 'Total Num FP')
-    for thresh, pc_detect, fp in zip(threshold_vals, pc_attacks_detected, num_FP):
-        print line_fmat.format(thresh, pc_detect, fp)
+    line_fmat = "{: >25} {: >25} {: >25} {: >25}"
+    print line_fmat.format('threshold val', '% attacks detected', 'Total Num FP', 'F1 Score')
+    for thresh, pc_detect, fp, f1 in zip(threshold_vals, pc_attacks_detected, num_FP, f1s):
+        print line_fmat.format(thresh, pc_detect, fp, f1)
 
     for thresh, fp_per_day_dic, tp_per_day_dic in zip(threshold_vals, num_FP_per_day, num_TP_per_day):
         print "threshold = {}, False Positives = {}".format(thresh, fp_per_day_dic)
