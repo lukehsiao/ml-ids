@@ -154,7 +154,7 @@ def _runScoring(clusters, testData):
                     lastAnomaly[feature] = timestamp
 
         # Zero all but IPv4_ttl (idx = 11)
-        scores[:, :10] = 0
+        scores[:, :11] = 0
         scores[:, 12:] = 0
 
         # Score the packet and store as last element
