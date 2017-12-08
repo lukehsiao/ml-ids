@@ -223,7 +223,6 @@ def main():
 
     testData = _parseTestingData()
     results = _runScoring(clusters, testData)
-    del testData
     outfile = open("data/phad_ablation.csv", "wb")
     writer = csv.writer(outfile)
     _outputToCSV(results, "data/phad_results.csv", threshold=0.5, feat=None)
@@ -236,6 +235,7 @@ def main():
     writer.writerow(["All", max(data['f1s'])])
 
     for feat in xrange(33):
+        results = _runScoring(clusters, testData)
         _outputToCSV(results, "data/phad_results.csv", threshold=0.5, feat=feat)
         data = check_results('data/phad_results.csv',
                              'data/master-listfile-condensed.txt',
