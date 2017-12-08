@@ -233,9 +233,11 @@ def main():
                          False)
     print(">>> %s %f" % ("All", max(data['f1s'])))
     writer.writerow(["All", max(data['f1s'])])
+    import pdb; pdb.set_trace()
 
     for feat in xrange(33):
-        results = _runScoring(clusters, testData)
+        # Commenting this out means additive feature removal.
+        #  results = _runScoring(clusters, testData)
         _outputToCSV(results, "data/phad_results.csv", threshold=0.5, feat=feat)
         data = check_results('data/phad_results.csv',
                              'data/master-listfile-condensed.txt',
