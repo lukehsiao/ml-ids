@@ -188,7 +188,7 @@ def get_attack_info(result_dic, attack_list, leeway=60):
 def getScoreVal(item):
     return -item['score']
 
-def print_results(final_results, data, pthresh=0.31):
+def print_results(final_results, data, pthresh=1e-8):
     threshold_vals = data['threshold_vals']
     pc_attacks_detected = data['pc_attacks_detected']
     num_FP = data['num_FP']
@@ -198,10 +198,13 @@ def print_results(final_results, data, pthresh=0.31):
     detected_attackNames = []
     title_fmat = '{: >12} {: >10} {: >18}  {: >6} {: >6} {: >25} {: >25}'
     line_fmat = '{: >12} {: >10} {: >18}  {:.6f} {: >4} {: >25} {: >25}'
+    #  title_fmat = '{: >12} {: >10} {: >18}  {: >6} {: >6} {: >25}'
+    #  line_fmat = '{: >12} {: >10} {: >18}  {:.6f} {: >4} {: >25}'
     count = 0
     print "For threshold = {}".format(pthresh)
     print "Top 20 scores: "
     print title_fmat.format('Date', 'Time', 'Dest IP Addr', 'Score', 'Det', 'Attack Name', 'Most Anom Field')
+    #  print title_fmat.format('Date', 'Time', 'Dest IP Addr', 'Score', 'Det', 'Attack Name')
     for res in final_results:
         if res['isAttack'] and res['score'] >= pthresh:
             class_type = 'TP'
@@ -211,6 +214,7 @@ def print_results(final_results, data, pthresh=0.31):
             class_type = 'N'
         if count < 20:
             print line_fmat.format(res['date'], res['time'], res['dstIP'], res['score'], class_type, res['attack_name'], res['anom_field'] + ' ' + str(int(float(res['anom_field_pc'])*100)) + '%')
+            #  print line_fmat.format(res['date'], res['time'], res['dstIP'], res['score'], class_type, res['attack_name'])
             count += 1
         if res['attack_name'] not in detected_attackNames and res['score'] >= pthresh:
             detected_attackNames.append(res['attack_name'])
@@ -229,7 +233,7 @@ def print_results(final_results, data, pthresh=0.31):
 
 def read_results(results_file):
     result_fmat = r'(?P<date>.*),(?P<time>.*),(?P<dstIP>.*),(?P<score>.*),(?P<anom_field>.*),(?P<anom_field_pc>[\d\.]*)[\r\n$]'
-#    result_fmat = r'(?P<date>.*),(?P<time>.*),(?P<dstIP>.*),(?P<score>.*)[\r\n$]'
+    #  result_fmat = r'(?P<date>.*),(?P<time>.*),(?P<dstIP>.*),(?P<score>.*)[\r\n$]'
     with open(results_file) as f:
         contents = f.read()
     matches = re.finditer(result_fmat, contents, re.M)
