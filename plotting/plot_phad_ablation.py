@@ -1,11 +1,13 @@
 """Plot PHAD feature ablation results."""
+import matplotlib
+matplotlib.use('Agg')
 from matplotlib.backends.backend_pdf import PdfPages
+import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns
-import matplotlib.pyplot as plt
 
 sns.set(style="whitegrid")
-fig, ax = plt.subplots(figsize=(4,6))
+fig, ax = plt.subplots(figsize=(4, 6))
 
 data = pd.read_csv("../data/phad_ablation.csv")
 data = data.sort_values("f1", ascending=True)
@@ -23,7 +25,7 @@ pp.savefig(fig)
 pp.close()
 plt.close(fig)
 
-fig, ax = plt.subplots(figsize=(4,6))
+fig, ax = plt.subplots(figsize=(4, 6))
 data = pd.read_csv("../data/phad_compounding_ablation.csv")
 
 sns.set_color_codes("muted")

@@ -1,4 +1,6 @@
 """Plot Precision-Recall Curve and F1 vs Threshold for PHAD."""
+import matplotlib
+matplotlib.use('Agg')
 from matplotlib.backends.backend_pdf import PdfPages
 import pandas as pd
 import seaborn as sns
