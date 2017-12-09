@@ -1,10 +1,11 @@
+"""Plot Precision-Recall Curve and F1 vs Threshold for PHAD."""
+from matplotlib.backends.backend_pdf import PdfPages
 import pandas as pd
 import seaborn as sns
-from matplotlib.backends.backend_pdf import PdfPages
 
 
 sns.set(font_scale=3.0, style="ticks")
-data = pd.read_csv("pr_curve.csv")
+data = pd.read_csv("phad_tuning.csv")
 
 plot = sns.lmplot(x="recall", y="precision", data=data, fit_reg=False,
                   markers=".", scatter_kws={"s": 200}, aspect=2)
@@ -17,7 +18,7 @@ pp = PdfPages("pr_curve.pdf")
 pp.savefig(plot.fig)
 pp.close()
 
-data2 = pd.read_csv("../temp.csv")
+data2 = pd.read_csv("phad_tuning.csv")
 
 plot2 = sns.lmplot(x="threshold", y="f1", data=data2, fit_reg=False,
                    markers=".", scatter_kws={"s": 200}, aspect=2)
