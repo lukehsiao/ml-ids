@@ -12,7 +12,6 @@ import struct
 from utils import Clusterer
 from utils import np_parse_pcap, FEATURES
 from utils import tstamp_to_datetime
-from check_results import *
 
 
 def _clusterTraining(trainingData, verbose=False):
@@ -168,18 +167,11 @@ def _runScoring(clusters, testData):
     return results
 
 
-def _outputToCSV(results, filename, threshold=0.5, feat=None):
+def _outputToCSV(results, filename, threshold=0.5):
     """Classify all attacks with a score above threshold as an attack."""
 
     outfile = open(filename, "wb")
     writer = csv.writer(outfile)
-
-    # Zero out a feature
-    if feat:
-        scoreMat = results[:, 34:]
-        results[:, -1] -= scoreMat[:, feat]
-        scoreMat[:, feat] = 0
-        scoreMat[:, -1][scoreMat[:, -1] < 1] = 1
 
     # Normalize Scores:
     scaler = MinMaxScaler()
@@ -223,29 +215,8 @@ def main():
 
     testData = _parseTestingData()
     results = _runScoring(clusters, testData)
-    outfile = open("data/phad_ablation.csv", "wb")
-    writer = csv.writer(outfile)
-    _outputToCSV(results, "data/phad_results.csv", threshold=0.5, feat=None)
-    data = check_results('data/phad_results.csv',
-                         'data/master-listfile-condensed.txt',
-                         '0.60:0.80:400',
-                         False,
-                         False)
-    print(">>> %s %f" % ("All", max(data['f1s'])))
-    writer.writerow(["All", max(data['f1s'])])
-
-    for feat in xrange(33):
-        results = _runScoring(clusters, testData)
-        _outputToCSV(results, "data/phad_results.csv", threshold=0.5, feat=feat)
-        data = check_results('data/phad_results.csv',
-                             'data/master-listfile-condensed.txt',
-                             '0.60:0.80:400',
-                             False,
-                             False)
-        print(">>> %s %f" % (FEATURES[feat], max(data['f1s'])))
-        writer.writerow([FEATURES[feat], max(data['f1s'])])
-
-    outfile.close()
+    del testData
+    _outputToCSV(results, "data/phad_results.csv", threshold=0.5)
 
 
 if __name__ == '__main__':
