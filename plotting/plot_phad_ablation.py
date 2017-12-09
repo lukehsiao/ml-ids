@@ -1,4 +1,4 @@
-"""Plot PHAD all-but-1 feature ablation results."""
+"""Plot PHAD feature ablation results."""
 from matplotlib.backends.backend_pdf import PdfPages
 import pandas as pd
 import seaborn as sns
