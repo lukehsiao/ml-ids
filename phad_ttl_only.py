@@ -12,6 +12,7 @@ import struct
 from utils import Clusterer
 from utils import np_parse_pcap, FEATURES
 from utils import tstamp_to_datetime
+from check_results import *
 
 
 def _clusterTraining(trainingData, verbose=False):
@@ -152,11 +153,16 @@ def _runScoring(clusters, testData):
                                             nr[feature][1])
                     lastAnomaly[feature] = timestamp
 
+        # Zero all but IPv4_ttl (idx = 11)
+        scores[:, :11] = 0
+        scores[:, 12:] = 0
+
         # Score the packet and store as last element
         scores[:, -1] = np.sum(scores[:, 0:-1], axis=1)
 
+
         # If the total score of the packet is very small, set it to one so
-        # that the resulting normalization doesn't fail.
+        # that taking the log later doesn't fail.
         scores[:, -1][scores[:, -1] < 1] = 1
 
         results = np.hstack((testData, scores))
@@ -167,7 +173,7 @@ def _runScoring(clusters, testData):
     return results
 
 
-def _outputToCSV(results, filename, threshold=0.5):
+def _outputToCSV(results, filename, threshold=0.5, feat=None):
     """Classify all attacks with a score above threshold as an attack."""
 
     outfile = open(filename, "wb")
@@ -215,8 +221,30 @@ def main():
 
     testData = _parseTestingData()
     results = _runScoring(clusters, testData)
-    del testData
-    _outputToCSV(results, "data/phad_results.csv", threshold=0.5)
+    #  outfile = open("data/phad_ablation.csv", "wb")
+    #  writer = csv.writer(outfile)
+    import pdb; pdb.set_trace()
+    _outputToCSV(results, "data/phad_results.csv", threshold=0.5, feat=None)
+    data = check_results('data/phad_results.csv',
+                         'data/master-listfile-condensed.txt',
+                         '0.60:0.80:400',
+                         False,
+                         False)
+    print(">>> %s %f" % ("All", max(data['f1s'])))
+    #  writer.writerow(["All", max(data['f1s'])])
+    #
+    #  for feat in xrange(33):
+    #      results = _runScoring(clusters, testData)
+    #      _outputToCSV(results, "data/phad_results.csv", threshold=0.5, feat=feat)
+    #      data = check_results('data/phad_results.csv',
+    #                           'data/master-listfile-condensed.txt',
+    #                           '0.60:0.80:400',
+    #                           False,
+    #                           False)
+    #      print(">>> %s %f" % (FEATURES[feat], max(data['f1s'])))
+    #      writer.writerow([FEATURES[feat], max(data['f1s'])])
+    #
+    #  outfile.close()
 
 
 if __name__ == '__main__':
