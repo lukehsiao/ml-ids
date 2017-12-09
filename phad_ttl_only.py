@@ -221,30 +221,13 @@ def main():
 
     testData = _parseTestingData()
     results = _runScoring(clusters, testData)
-    #  outfile = open("data/phad_ablation.csv", "wb")
-    #  writer = csv.writer(outfile)
-    import pdb; pdb.set_trace()
-    _outputToCSV(results, "data/phad_results.csv", threshold=0.5, feat=None)
-    data = check_results('data/phad_results.csv',
+    _outputToCSV(results, "data/phad_ttl_only.csv", threshold=0.5, feat=None)
+    data = check_results('data/phad_ttl_only.csv',
                          'data/master-listfile-condensed.txt',
                          '0.60:0.80:400',
                          False,
                          False)
     print(">>> %s %f" % ("All", max(data['f1s'])))
-    #  writer.writerow(["All", max(data['f1s'])])
-    #
-    #  for feat in xrange(33):
-    #      results = _runScoring(clusters, testData)
-    #      _outputToCSV(results, "data/phad_results.csv", threshold=0.5, feat=feat)
-    #      data = check_results('data/phad_results.csv',
-    #                           'data/master-listfile-condensed.txt',
-    #                           '0.60:0.80:400',
-    #                           False,
-    #                           False)
-    #      print(">>> %s %f" % (FEATURES[feat], max(data['f1s'])))
-    #      writer.writerow([FEATURES[feat], max(data['f1s'])])
-    #
-    #  outfile.close()
 
 
 if __name__ == '__main__':
