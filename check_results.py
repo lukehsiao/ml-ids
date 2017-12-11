@@ -25,11 +25,9 @@ def check_results(results_file, attacks_file, threshold, make_plots, make_table)
         num_FP_per_day.append(total_FP_per_day)
         num_TP_per_day.append(total_TP_per_day)
         recall = total_unique_TP / num_unique_attacks
-        if (total_unique_TP + total_FP) > 0:
-            precision = total_unique_TP / (total_unique_TP + total_FP)
-        else:
-            precision = 0
-        if recall > 0 and precision > 0:
+        total_pos = total_unique_TP + total_FP
+        precision = total_unique_TP / total_pos if total_pos > 0 else 0
+        if (recall + precision) > 0:
             f1s.append(2 * (recall * precision) / (recall + precision))
         else:
             f1s.append(0.0)
