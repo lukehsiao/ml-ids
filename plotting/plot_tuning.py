@@ -20,13 +20,25 @@ pp = PdfPages("pr_curve.pdf")
 pp.savefig(plot.fig)
 pp.close()
 
-plot2 = sns.lmplot(x="threshold", y="f1", data=data, fit_reg=False,
+plot = sns.lmplot(x="threshold", y="f1", data=data, fit_reg=False,
                    markers=".", scatter_kws={"s": 200}, aspect=2)
 
-plot2.set(ylim=(0, 1))
-plot2.set(xlim=(0.5, 1))
-plot2.set(ylabel="F1 Score")
-plot2.set(xlabel="Threshold Value")
+plot.set(ylim=(0, 1))
+plot.set(xlim=(0.5, 1))
+plot.set(ylabel="F1 Score")
+plot.set(xlabel="Threshold Value")
 pp = PdfPages("f1_curve.pdf")
-pp.savefig(plot2.fig)
+pp.savefig(plot.fig)
+pp.close()
+
+plot = sns.lmplot(x="TotalNumFP", y="recall", data=data,
+                  fit_reg=False, markers=".", scatter_kws={"s": 200},
+                  aspect=2)
+
+plot.set(ylim=(0, 1))
+plot.set(xlim=(0, 200))
+plot.set(ylabel=r"Recall")
+plot.set(xlabel="Num False Positives")
+pp = PdfPages("dfa_curve.pdf")
+pp.savefig(plot.fig)
 pp.close()
