@@ -6,9 +6,9 @@ import pandas as pd
 import seaborn as sns
 
 
-sns.set(font_scale=3.0, style="ticks")
+sns.set(font_scale=2.0, style="whitegrid")
 data = pd.read_csv("../data/phad_tuning.csv")
-DOT_SIZE = 50
+DOT_SIZE = 75
 
 data["tp"] = data.apply(lambda row: row.attacksdetected / 100 * 201, axis=1)
 data["recall"] = data.apply(lambda row: row.attacksdetected / 100, axis=1)
