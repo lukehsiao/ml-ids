@@ -12,3 +12,6 @@ install:
 
 script:
   - python -m unittest discover
+  - cd plotting
+  - python plot_phad_ablation.py
+  - python plot_tuning.py

@@ -1,5 +1,5 @@
 # Machine-learning based intrusion detection
-[![Build Status](https://travis-ci.com/lukehsiao/ml-ids.svg?token=T3shSHjcJk8kMbzHEY7Z&branch=master)](https://travis-ci.com/lukehsiao/ml-ids)
+[![Build Status](https://travis-ci.org/lukehsiao/ml-ids.svg?branch=master)](https://travis-ci.org/lukehsiao/ml-ids)
 
 ## Downloading the Datasets
 
@@ -38,6 +38,48 @@ to your modified settings file):
 ```
 source ~/classes/cs229/ml-ids/settings.sh
 ```
+
+## Experiment Files
+Our various experiments are organized as Python files in the root of the
+repository. Each of the experiments is explained below.
+
+- `gmm.py` - Mixture of Gaussian experiment
+  - This experiment uses a stationary mixture of Gaussian model by leveraging
+    the sklearn library.
+- `phad-c32.py`
+  - Our Python implementation of the PHAD-C32 algorithm described in the
+    [original
+    paper](https://dspace-test.lib.fit.edu/bitstream/handle/11141/94/cs-2001-04.pdf?sequence=1&isAllowed=y)
+- `phad_feat_all_but_one.py`
+  - A feature ablation experiment for the PHAD algorithm which iteratively
+    tests all features except for one.
+- `phad_ttl_only.py`
+  - A simplified version of PHAD with only uses the `IPv4_ttl` packet field as
+    a feature.
+
+## Checking Results
+`check_results.py` is a simple script used for checking the results of each
+experiment.
+
+```
+usage: check_results.py [-h] [--thresh THRESH] [--plot] [--table]
+                        results_file attacks_file
+
+positional arguments:
+  results_file     the results.csv file
+  attacks_file     the actual attacks file
+
+optional arguments:
+  -h, --help       show this help message and exit
+  --thresh THRESH  range of thresholds to try. Format: start:stop:num_points,
+                   default: 0.5:0.5:1
+  --plot           make plots
+  --table          make table
+```
+
+## Generating Plots
+The plots we used in the poster and paper were generated using the scripts in
+`plotting/`.
 
 ## Running Tests
 To run tests locally, run
