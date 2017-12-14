@@ -8,7 +8,7 @@ import numpy as np
 import matplotlib
 import matplotlib.pyplot as plt
 
-def check_results(results_file, attacks_file, threshold, make_plots, make_table):
+def check_results(results_file, attacks_file, threshold, make_plots, table_thresh):
     threshold_vals = parse_threshold(threshold)
     attack_list, num_unique_attacks = read_attack_file(attacks_file)
     raw_results = read_results(results_file)
@@ -42,8 +42,7 @@ def check_results(results_file, attacks_file, threshold, make_plots, make_table)
 
     if make_plots:
         plot_results(data)
-    elif make_table:
-        print_results(final_results, data)
+    print_results(final_results, data, table_thresh)
 
     return data
 
@@ -187,7 +186,7 @@ def getScoreVal(item):
     return -item['score']
 
 #  def print_results(final_results, data, pthresh=1e-8):
-def print_results(final_results, data, pthresh=0.725):
+def print_results(final_results, data, pthresh):
     threshold_vals = data['threshold_vals']
     pc_attacks_detected = data['pc_attacks_detected']
     num_FP = data['num_FP']
@@ -250,7 +249,7 @@ def main():
     parser.add_argument('attacks_file', type=str, help="the actual attacks file")
     parser.add_argument('--thresh', type=str, default='0.5:0.5:1', help="range of thresholds to try. Format: start:stop:num_points, default: 0.5:0.5:1")
     parser.add_argument('--plot', action='store_true', help="make plots")
-    parser.add_argument('--table', action='store_true', help="make table")
+    parser.add_argument('--table', type=float, default=0.725, help="make table using the specified threshold")
     args = parser.parse_args()
 
     check_results(args.results_file, args.attacks_file, args.thresh, args.plot, args.table)
