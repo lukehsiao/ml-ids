@@ -2,6 +2,7 @@
 import matplotlib
 matplotlib.use('Agg')
 from matplotlib.backends.backend_pdf import PdfPages
+import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns
 
@@ -46,6 +47,7 @@ plot.set(ylim=(0, 1))
 plot.set(xlim=(0, 150))
 plot.set(ylabel=r"Recall")
 plot.set(xlabel="Num False Positives")
+plt.axvline(x=100, color='r')
 pp = PdfPages("dfa_curve.pdf")
 pp.savefig(plot.fig)
 pp.close()

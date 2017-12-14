@@ -187,7 +187,7 @@ def getScoreVal(item):
     return -item['score']
 
 #  def print_results(final_results, data, pthresh=1e-8):
-def print_results(final_results, data, pthresh=0.31):
+def print_results(final_results, data, pthresh=0.725):
     threshold_vals = data['threshold_vals']
     pc_attacks_detected = data['pc_attacks_detected']
     num_FP = data['num_FP']
