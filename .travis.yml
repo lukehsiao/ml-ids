@@ -10,6 +10,11 @@ only:
 install:
   - pip install -r requirements.txt 
 
+before_script:
+  - cd data
+  - ./download_data.sh
+  - cd ..
+
 script:
   - python -m unittest discover
   - cd plotting
