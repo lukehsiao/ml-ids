@@ -56,13 +56,17 @@ repository. Each of the experiments is explained below.
 - `phad_ttl_only.py`
   - A simplified version of PHAD with only uses the `IPv4_ttl` packet field as
     a feature.
+- `kdd_knn.py`
+  - A K-nearest neighbor model and feature ablation experiment for the KDD
+    dataset using the KDD features which iteratively tests a single feature at
+    a time.
 
 ## Checking Results
 `check_results.py` is a simple script used for checking the results of each
 experiment.
 
 ```
-usage: check_results.py [-h] [--thresh THRESH] [--plot] [--table]
+usage: check_results.py [-h] [--thresh THRESH] [--plot] [--table TABLE]
                         results_file attacks_file
 
 positional arguments:
@@ -74,7 +78,7 @@ optional arguments:
   --thresh THRESH  range of thresholds to try. Format: start:stop:num_points,
                    default: 0.5:0.5:1
   --plot           make plots
-  --table          make table
+  --table TABLE    make table using the specified threshold
 ```
 
 ## Generating Plots
