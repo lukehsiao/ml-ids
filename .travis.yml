@@ -8,14 +8,13 @@ only:
   - master
 
 install:
-  - pip install -r requirements.txt 
   - sudo apt-get -qq update
-  - sudo apt-get install -y wget gunzip
+  - sudo apt-get install -y wget 
+  - pip install -r requirements.txt 
 
 before_script:
   - cd data
   - ./download_data.sh
-  - cd ..
 
 script:
   - python -m unittest discover
