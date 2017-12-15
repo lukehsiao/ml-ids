@@ -1,4 +1,3 @@
-
 import sys, os, json
 import numpy as np
 from sklearn.neighbors import KNeighborsClassifier
@@ -21,7 +20,7 @@ class KNN_Model(object):
 
 class Ablation_Exp(object):
     """Performs an ablation experiment where we start with all features and remove
-       one at a time. Plot the F1 Score.  
+       one at a time. Plot the F1 Score.
     """
     def __init__(self, outDir, schema_file):
         self.outDir = outDir
@@ -36,7 +35,7 @@ class Ablation_Exp(object):
         del train_data
         del test_data
 
-        feature_to_try = range(num_features) 
+        feature_to_try = range(num_features)
         params_list = zip([train_data_file]*num_features, [train_labels_file]*num_features, [test_data_file]*num_features, [test_labels_file]*num_features, feature_to_try)
 
 #        f1_scores = map(calc_f1_score, params_list)
@@ -51,7 +50,7 @@ class Ablation_Exp(object):
         with open(filename, 'w') as f:
             f.write('color,ablated,f1\n')
             for feat, score in zip(self.feature_list, f1_scores):
-                f.write('b,{},{}\n'.format(feat, score)) 
+                f.write('b,{},{}\n'.format(feat, score))
 
 # This runs in parallel
 def calc_f1_score(in_tuple):
@@ -67,7 +66,7 @@ def calc_f1_score(in_tuple):
     test_labels = np.load(test_labels_file)
 
     #### prune data
-    train_data = train_data[:, [feat_to_try]] 
+    train_data = train_data[:, [feat_to_try]]
     train_labels = train_labels[:, 0]
     test_data = test_data[:, [feat_to_try]]
     test_labels = test_labels[:, 0]
