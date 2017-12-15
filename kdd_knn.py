@@ -3,7 +3,7 @@ import numpy as np
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.metrics import f1_score
 import matplotlib.pyplot as plt
-from kdd_parser import Kdd_Schema
+from utils import Kdd_Schema
 from multiprocessing import Pool, cpu_count
 
 class KNN_Model(object):
