@@ -59,7 +59,6 @@ echo wget https://archive.ics.uci.edu/ml/machine-learning-databases/kddcup99-mld
 wget https://archive.ics.uci.edu/ml/machine-learning-databases/kddcup99-mld/kddcup.names -O kdd_data/kddcup.names -q
 
 echo "Preprocessing KDD data..."
-python parse_kdd_data.py
-
+python parse_kdd_data.py || { exit 1; }
 
 echo "Done!"

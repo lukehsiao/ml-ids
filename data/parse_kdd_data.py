@@ -1,6 +1,7 @@
+import sys
+sys.path.append("..")
+from utils import Kdd_Parser
 
-from kdd_parser import *
-
-p = Kdd_Parser('kddcup.names', 'kdd_data/training/kddcup.data_10_percent', 'kdd_data/testing/corrected', 'binary')
+p = Kdd_Parser('kdd_data/kddcup.names', 'kdd_data/training', 'kdd_data/testing', 'binary')
 p.save_data('kdd_data/cache')
 
