@@ -76,19 +76,13 @@ def calc_f1_score(in_tuple):
     knn.train(train_data, train_labels)
     pred_labels = knn.test(test_data)
 
-    record_labels(pred_labels, feat_to_try)
-
     score = f1_score(test_labels, pred_labels, pos_label=0)
     print 'Finished features: {}:end'.format(feat_to_try)
     return score
 
-def record_labels(pred_labels, feature_num):
-    filename = 'kdd_output/predictions/pred_labels_{}'.format(feature_num)
-    np.save(filename, pred_labels)
-
 def main():
-    exp = Ablation_Exp('kdd_output', 'kdd_data/schema.txt')
-    exp.run_exp('kdd_data/cache/train_data.npy', 'kdd_data/cache/train_labels_binary.npy', 'kdd_data/cache/test_data.npy', 'kdd_data/cache/test_labels_binary.npy')
+    exp = Ablation_Exp('data', 'data/kdd_data/kddcup.names')
+    exp.run_exp('data/kdd_data/cache/train_data.npy', 'data/kdd_data/cache/train_labels_binary.npy', 'data/kdd_data/cache/test_data.npy', 'data/kdd_data/cache/test_labels_binary.npy')
 
 if __name__ == '__main__':
     main()

@@ -58,4 +58,8 @@ gunzip kdd_data/testing.gz
 echo wget https://archive.ics.uci.edu/ml/machine-learning-databases/kddcup99-mld/kddcup.names
 wget https://archive.ics.uci.edu/ml/machine-learning-databases/kddcup99-mld/kddcup.names -O kdd_data/kddcup.names -q
 
+echo "Preprocessing KDD data..."
+python parse_kdd_data.py
+
+
 echo "Done!"
