@@ -13,7 +13,9 @@ install:
   - pip install -r requirements.txt 
 
 before_script:
-  - cd data && ls
+  - cd data 
+  - ./download-data.sh
+  - cd ..
 
 script:
   - python -m unittest discover
