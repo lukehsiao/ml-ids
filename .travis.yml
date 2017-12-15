@@ -24,8 +24,8 @@ script:
   - python plot_tuning.py
   - cd ..
   - python phad-c32.py
-  - python phad_feat_all_but_one-c32.py
-  - python phad_ttl_only.py
-  - python gmm.py
-  - python kdd_knn.py
+  # - python phad_feat_all_but_one-c32.py
+  # - python phad_ttl_only.py
+  # - python gmm.py
+  # - python kdd_knn.py
   - ./check_results.py data/phad_results.csv data/master-listfile-condensed.txt --table 0.725 --thresh 0.725:0.725:1
