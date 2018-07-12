@@ -1,9 +1,10 @@
-#!/bin/bash
+#! /bin/bash
 
 # URL format:
-# https://www.ll.mit.edu/ideval/data/1999/training/week2/monday/outside.tcpdump.gz
+# ftp://ftp.ll.mit.edu/outgoing/darpa/data/1999/training/week1/monday/outside.tcpdump.gz
 
-base_url="https://www.ll.mit.edu/ideval/data/1999/"
+
+base_url="ftp://ftp.ll.mit.edu/outgoing/darpa/data/1999/"
 
 mkdir -p training
 mkdir -p testing
