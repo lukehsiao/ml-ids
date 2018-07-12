@@ -106,7 +106,7 @@ def np_parse_pcap_worker(filename):
     design_mat = -1*np.ones((len(pkts), len(FEATURES)), dtype=int)
     time_arr = np.zeros((len(pkts), 1))
     count = 0
-    for pkt_bytes, (sec, usec, wirelen) in pkts:
+    for pkt_bytes, (sec, usec, wirelen, caplen) in pkts:
         time_arr[count] = float(sec) + float(usec)*1e-6
         ind = FEATURES.index('Ethernet_size')
         design_mat[count, ind] = wirelen
