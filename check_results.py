@@ -1,5 +1,8 @@
 #!/usr/bin/env python
 from __future__ import division
+from __future__ import print_function
+from builtins import zip
+from builtins import str
 import sys, os, re
 import argparse
 from utils.labeler import read_attack_file, ip2int, int2ip, checkIPsEqual
@@ -7,6 +10,7 @@ from utils.time_functions import datetime_to_tstamp
 import numpy as np
 import matplotlib
 import matplotlib.pyplot as plt
+
 
 def check_results(results_file, attacks_file, threshold, make_plots, table_thresh):
     threshold_vals = parse_threshold(threshold)
@@ -19,8 +23,12 @@ def check_results(results_file, attacks_file, threshold, make_plots, table_thres
     num_FP_per_day = []
     f1s = []
     for thresh in threshold_vals:
-        total_unique_TP, total_TP_per_day, total_FP, total_FP_per_day = classify_results(final_results, thresh)
-        pc_attacks_detected.append(float(total_unique_TP)/float(num_unique_attacks)*100)
+        total_unique_TP, total_TP_per_day, total_FP, total_FP_per_day = classify_results(
+            final_results, thresh
+        )
+        pc_attacks_detected.append(
+            float(total_unique_TP) / float(num_unique_attacks) * 100
+        )
         num_FP.append(total_FP)
         num_FP_per_day.append(total_FP_per_day)
         num_TP_per_day.append(total_TP_per_day)
@@ -33,12 +41,12 @@ def check_results(results_file, attacks_file, threshold, make_plots, table_thres
             f1s.append(0.0)
 
     data = {}
-    data['threshold_vals'] = threshold_vals
-    data['pc_attacks_detected'] = pc_attacks_detected
-    data['num_FP'] = num_FP
-    data['num_FP_per_day'] = num_FP_per_day
-    data['num_TP_per_day'] = num_TP_per_day
-    data['f1s'] = f1s
+    data["threshold_vals"] = threshold_vals
+    data["pc_attacks_detected"] = pc_attacks_detected
+    data["num_FP"] = num_FP
+    data["num_FP_per_day"] = num_FP_per_day
+    data["num_TP_per_day"] = num_TP_per_day
+    data["f1s"] = f1s
 
     if make_plots:
         plot_results(data)
@@ -46,33 +54,32 @@ def check_results(results_file, attacks_file, threshold, make_plots, table_thres
 
     return data
 
+
 def plot_results(data):
     # plot the pc_attacks_detected vs threshold_vals
     plt.figure()
-    plt.plot(data['threshold_vals'], data['pc_attacks_detected'], marker='o')
-    plt.xlabel('Threshold Values')
-    plt.ylabel('% of Total Attacks Detected')
-#    plt.title('% Total Attacks Detected vs. Threshold Value')
+    plt.plot(data["threshold_vals"], data["pc_attacks_detected"], marker="o")
+    plt.xlabel("Threshold Values")
+    plt.ylabel("% of Total Attacks Detected")
+    #    plt.title('% Total Attacks Detected vs. Threshold Value')
 
     # plot the total # false positives vs threshold values
     plt.figure()
-    plt.semilogy(data['threshold_vals'], data['num_FP'], marker='o')
-    plt.xlabel('Threshold Values')
-    plt.ylabel('Total # False Positives')
-#    plt.title('Total # False Positives vs. Threshold Value')
+    plt.semilogy(data["threshold_vals"], data["num_FP"], marker="o")
+    plt.xlabel("Threshold Values")
+    plt.ylabel("Total # False Positives")
+    #    plt.title('Total # False Positives vs. Threshold Value')
 
     plt.figure()
-    plt.semilogx(data['num_FP'], data['pc_attacks_detected'], marker='o', linewidth=5)
-    plt.xlabel('Total # False Positives')
-    plt.ylabel('% of Total Attacks Detected')
+    plt.semilogx(data["num_FP"], data["pc_attacks_detected"], marker="o", linewidth=5)
+    plt.xlabel("Total # False Positives")
+    plt.ylabel("% of Total Attacks Detected")
     plt.yticks([0, 10, 20, 30, 40, 50])
-    plt.xlim(max(data['num_FP']), 0)
+    plt.xlim(max(data["num_FP"]), 0)
     plt.subplots_adjust(bottom=0.2)
 
-    font = {'family' : 'normal',
-            'weight' : 'bold',
-            'size'   : 35}
-    matplotlib.rc('font', **font)
+    font = {"family": "normal", "weight": "bold", "size": 35}
+    matplotlib.rc("font", **font)
 
     plt.show()
 
@@ -84,19 +91,20 @@ def parse_threshold(threshold):
     Returns:
       - numpy array of threshold values
     """
-    threshold_fmat = r'(?P<start>[\d\.]*):(?P<stop>[\d\.]*):(?P<num_points>\d*)$'
+    threshold_fmat = r"(?P<start>[\d\.]*):(?P<stop>[\d\.]*):(?P<num_points>\d*)$"
     match = re.search(threshold_fmat, threshold)
     if match is None:
-        print >> sys.stderr, "ERROR: invalid threshold specified"
+        print("ERROR: invalid threshold specified", file=sys.stderr)
         sys.exit(1)
     try:
-        start = float(match.group('start'))
-        stop = float(match.group('stop'))
-        num_points = int(match.group('num_points'))
+        start = float(match.group("start"))
+        stop = float(match.group("stop"))
+        num_points = int(match.group("num_points"))
     except ValueError as e:
-        print >> sys.stderr, "ERROR: invalid threshold specified"
+        print("ERROR: invalid threshold specified", file=sys.stderr)
         sys.exit(1)
     return np.linspace(start, stop, num_points)
+
 
 def get_final_results(raw_results, attack_list):
     """
@@ -115,9 +123,9 @@ def get_final_results(raw_results, attack_list):
     raw_results = sorted(raw_results, key=getScoreVal)
     for result in raw_results:
         isAttack, attackID, attackName = get_attack_info(result, attack_list)
-        result['attackID'] = attackID
-        result['isAttack'] = isAttack
-        result['attack_name'] = attackName
+        result["attackID"] = attackID
+        result["isAttack"] = isAttack
+        result["attack_name"] = attackName
         if isAttack and attackID not in detected_attackIDs:
             # record this attack ID so that we know we've seen it before
             detected_attackIDs.append(attackID)
@@ -127,6 +135,7 @@ def get_final_results(raw_results, attack_list):
             # include all results that do not detect an attack in the final results
             final_results.append(result)
     return final_results
+
 
 def classify_results(final_results, threshold):
     """
@@ -143,20 +152,21 @@ def classify_results(final_results, threshold):
     total_FP = 0
     total_FP_per_day = {}
     for result in final_results:
-        if result['score'] > threshold:
-            if result['isAttack']:
+        if result["score"] > threshold:
+            if result["isAttack"]:
                 total_unique_TP += 1
-                if result['date'] not in total_TP_per_day.keys():
-                    total_TP_per_day[result['date']] = 1
+                if result["date"] not in list(total_TP_per_day.keys()):
+                    total_TP_per_day[result["date"]] = 1
                 else:
-                    total_TP_per_day[result['date']] += 1
+                    total_TP_per_day[result["date"]] += 1
             else:
                 total_FP += 1
-                if result['date'] not in total_FP_per_day.keys():
-                    total_FP_per_day[result['date']] = 1
+                if result["date"] not in list(total_FP_per_day.keys()):
+                    total_FP_per_day[result["date"]] = 1
                 else:
-                    total_FP_per_day[result['date']] += 1
+                    total_FP_per_day[result["date"]] += 1
     return total_unique_TP, total_TP_per_day, total_FP, total_FP_per_day
+
 
 def get_attack_info(result_dic, attack_list, leeway=60):
     """
@@ -170,91 +180,139 @@ def get_attack_info(result_dic, attack_list, leeway=60):
       - attackName - string of attack name, '' if not an attack
     """
     isAttack = False
-    attackID = ''
-    attackName = ''
-    tstamp = result_dic['timestamp']
-    dstIP = result_dic['dstIP']
+    attackID = ""
+    attackName = ""
+    tstamp = result_dic["timestamp"]
+    dstIP = result_dic["dstIP"]
     for attack in attack_list:
-        if tstamp >= (attack['range'][0] - leeway) and tstamp <= (attack['range'][1] + leeway) and checkIPsEqual(dstIP, attack['dstIP']):
+        if (
+            tstamp >= (attack["range"][0] - leeway)
+            and tstamp <= (attack["range"][1] + leeway)
+            and checkIPsEqual(dstIP, attack["dstIP"])
+        ):
             isAttack = True
-            attackID = attack['ID']
-            attackName = attack['name']
+            attackID = attack["ID"]
+            attackName = attack["name"]
             return isAttack, attackID, attackName
     return isAttack, attackID, attackName
 
+
 def getScoreVal(item):
-    return -item['score']
+    return -item["score"]
+
 
 #  def print_results(final_results, data, pthresh=1e-8):
 def print_results(final_results, data, pthresh):
-    threshold_vals = data['threshold_vals']
-    pc_attacks_detected = data['pc_attacks_detected']
-    num_FP = data['num_FP']
-    num_FP_per_day = data['num_FP_per_day']
-    num_TP_per_day = data['num_TP_per_day']
-    f1s = data['f1s']
+    threshold_vals = data["threshold_vals"]
+    pc_attacks_detected = data["pc_attacks_detected"]
+    num_FP = data["num_FP"]
+    num_FP_per_day = data["num_FP_per_day"]
+    num_TP_per_day = data["num_TP_per_day"]
+    f1s = data["f1s"]
     detected_attackNames = []
-    title_fmat = '{: >12} {: >10} {: >18}  {: >6} {: >6} {: >25} {: >25}'
-    line_fmat = '{: >12} {: >10} {: >18}  {:.6f} {: >4} {: >25} {: >25}'
+    title_fmat = "{: >12} {: >10} {: >18}  {: >6} {: >6} {: >25} {: >25}"
+    line_fmat = "{: >12} {: >10} {: >18}  {:.6f} {: >4} {: >25} {: >25}"
     #  title_fmat = '{: >12} {: >10} {: >18}  {: >6} {: >6} {: >25}'
     #  line_fmat = '{: >12} {: >10} {: >18}  {:.6f} {: >4} {: >25}'
     count = 0
-    print "For threshold = {}".format(pthresh)
-    print "Top 20 scores: "
-    print title_fmat.format('Date', 'Time', 'Dest IP Addr', 'Score', 'Det', 'Attack Name', 'Most Anom Field')
+    print("For threshold = {}".format(pthresh))
+    print("Top 20 scores: ")
+    print(
+        title_fmat.format(
+            "Date",
+            "Time",
+            "Dest IP Addr",
+            "Score",
+            "Det",
+            "Attack Name",
+            "Most Anom Field",
+        )
+    )
     #  print title_fmat.format('Date', 'Time', 'Dest IP Addr', 'Score', 'Det', 'Attack Name')
     for res in final_results:
-        if res['isAttack'] and res['score'] >= pthresh:
-            class_type = 'TP'
-        elif not res['isAttack'] and res['score'] >= pthresh:
-            class_type = 'FP'
+        if res["isAttack"] and res["score"] >= pthresh:
+            class_type = "TP"
+        elif not res["isAttack"] and res["score"] >= pthresh:
+            class_type = "FP"
         else:
-            class_type = 'N'
+            class_type = "N"
         if count < 20:
-            print line_fmat.format(res['date'], res['time'], res['dstIP'], res['score'], class_type, res['attack_name'], res['anom_field'] + ' ' + str(int(float(res['anom_field_pc'])*100)) + '%')
+            print(
+                line_fmat.format(
+                    res["date"],
+                    res["time"],
+                    res["dstIP"],
+                    res["score"],
+                    class_type,
+                    res["attack_name"],
+                    res["anom_field"]
+                    + " "
+                    + str(int(float(res["anom_field_pc"]) * 100))
+                    + "%",
+                )
+            )
             #  print line_fmat.format(res['date'], res['time'], res['dstIP'], res['score'], class_type, res['attack_name'])
             count += 1
-        if res['attack_name'] not in detected_attackNames and res['score'] >= pthresh:
-            detected_attackNames.append(res['attack_name'])
-    print "# detected attackNames = {}".format(len(detected_attackNames))
-    print "Detection Results:"
-    print "------------------"
+        if res["attack_name"] not in detected_attackNames and res["score"] >= pthresh:
+            detected_attackNames.append(res["attack_name"])
+    print("# detected attackNames = {}".format(len(detected_attackNames)))
+    print("Detection Results:")
+    print("------------------")
     line_fmat = "{: >25} {: >25} {: >25} {: >25}"
-    print line_fmat.format('threshold val', '% attacks detected', 'Total Num FP', 'F1 Score')
-    for thresh, pc_detect, fp, f1 in zip(threshold_vals, pc_attacks_detected, num_FP, f1s):
-        print line_fmat.format(thresh, pc_detect, fp, f1)
+    print(
+        line_fmat.format(
+            "threshold val", "% attacks detected", "Total Num FP", "F1 Score"
+        )
+    )
+    for thresh, pc_detect, fp, f1 in zip(
+        threshold_vals, pc_attacks_detected, num_FP, f1s
+    ):
+        print(line_fmat.format(thresh, pc_detect, fp, f1))
 
-    for thresh, fp_per_day_dic, tp_per_day_dic in zip(threshold_vals, num_FP_per_day, num_TP_per_day):
-        print "threshold = {}, False Positives = {}".format(thresh, fp_per_day_dic)
-        print "threshold = {}, True Positives = {}".format(thresh, tp_per_day_dic)
+    for thresh, fp_per_day_dic, tp_per_day_dic in zip(
+        threshold_vals, num_FP_per_day, num_TP_per_day
+    ):
+        print("threshold = {}, False Positives = {}".format(thresh, fp_per_day_dic))
+        print("threshold = {}, True Positives = {}".format(thresh, tp_per_day_dic))
 
 
 def read_results(results_file):
-    result_fmat = r'(?P<date>.*),(?P<time>.*),(?P<dstIP>.*),(?P<score>.*),(?P<anom_field>.*),(?P<anom_field_pc>[\d\.]*)[\r\n$]'
+    result_fmat = r"(?P<date>.*),(?P<time>.*),(?P<dstIP>.*),(?P<score>.*),(?P<anom_field>.*),(?P<anom_field_pc>[\d\.]*)[\r\n$]"
     #  result_fmat = r'(?P<date>.*),(?P<time>.*),(?P<dstIP>.*),(?P<score>.*)[\r\n$]'
     with open(results_file) as f:
         contents = f.read()
     matches = re.finditer(result_fmat, contents, re.M)
     results = [m.groupdict() for m in matches]
     for dic in results:
-        dic['timestamp'] = datetime_to_tstamp(dic['date'], dic['time'])
-        dic['score'] = float(dic['score'])
+        dic["timestamp"] = datetime_to_tstamp(dic["date"], dic["time"])
+        dic["score"] = float(dic["score"])
     return results
 
 
 def main():
     """Check the resulting csv file of packet classifications to see if actual attacks were detected"""
     parser = argparse.ArgumentParser()
-    parser.add_argument('results_file', type=str, help="the results.csv file")
-    parser.add_argument('attacks_file', type=str, help="the actual attacks file")
-    parser.add_argument('--thresh', type=str, default='0.5:0.5:1', help="range of thresholds to try. Format: start:stop:num_points, default: 0.5:0.5:1")
-    parser.add_argument('--plot', action='store_true', help="make plots")
-    parser.add_argument('--table', type=float, default=0.725, help="make table using the specified threshold")
+    parser.add_argument("results_file", type=str, help="the results.csv file")
+    parser.add_argument("attacks_file", type=str, help="the actual attacks file")
+    parser.add_argument(
+        "--thresh",
+        type=str,
+        default="0.5:0.5:1",
+        help="range of thresholds to try. Format: start:stop:num_points, default: 0.5:0.5:1",
+    )
+    parser.add_argument("--plot", action="store_true", help="make plots")
+    parser.add_argument(
+        "--table",
+        type=float,
+        default=0.725,
+        help="make table using the specified threshold",
+    )
     args = parser.parse_args()
 
-    check_results(args.results_file, args.attacks_file, args.thresh, args.plot, args.table)
+    check_results(
+        args.results_file, args.attacks_file, args.thresh, args.plot, args.table
+    )
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
-
